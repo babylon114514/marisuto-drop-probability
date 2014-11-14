@@ -108,6 +108,26 @@ var Range = {
     }
 };
 
+function mySetCookie(key, value, day) {
+    var date = new Date();
+    date.setTime(date.getTime() + (day * 24 * 60 * 60 * 1000));
+    document.cookie = "@" + key + "=" + encodeURIComponent(value) + ";expires=" + date.toGMTString();
+}
+function myGetCookie(key) {
+    key = "@" + key + "=";
+    var value = null;
+    var cookie = document.cookie + ";";
+    var offset = cookie.indexOf(key);
+    if (offset > -1) {
+        var start = offset + key.length;
+        var end = cookie.indexOf(";", start);
+        value = decodeURIComponent(cookie.substring(start, end));
+    }
+    var valueAsNumber = Number(value);
+    if (value === null || isNaN(valueAsNumber)) return value;
+    return valueAsNumber;
+}
+
 function formatProbability(probability) {
     var str = ("\u00A0\u00A0\u00A0\u00A0" + Math.round(probability * 1000)).slice(-4)
     if (str.match(/\u00A0{3}(\d)/)) return "\u00A0\u00A00." + RegExp.$1 + "%"
@@ -509,6 +529,13 @@ new Quest(32, "妖精の森", false, [new Difficulty("EAS", [new Wave([new Enemy
 ];
 
 function redraw() {
+    mySetCookie("version", 1, 365);
+    mySetCookie("trophy_setting", Chara.all.map(function(chara) {
+        return $("#trophy_setting_" + chara.id);
+    }).map(function(checkbox) {
+        return checkbox.size() == 0 ? "x" : Number(checkbox.prop("checked")).toString();
+    }).join(""), 365);
+
     var tbody = $(document.createElement("tbody"));
     var table = $(document.createElement("table")).append(tbody);
 
@@ -541,13 +568,26 @@ $(function() {
     });
     $("#quest_setting").on("change", redraw);
     $("#cocoa_setting").on("change", redraw);
-    Chara.all.concat().sort(function(x, y){return x.trophyOrder - y.trophyOrder}).forEach(function(chara) {
+    var savedTrophySetting = Range.closed(0, 2).map(function(){return true}).
+        concat(Range.closed(3, 54).map(function(){return false})).
+        concat(Range.closed(55, 56).map(function(){return void(0)})).
+        concat(Range.closed(57, Chara.all.length - 1).map(function(){return false}));
+    if(myGetCookie("trophy_setting") !== null) {
+        myGetCookie("trophy_setting").split("").map(function(flg){
+            return (flg == "x") ? void(0) : (flg == "1");
+        }).forEach(function(isTrophyCaught, id) {
+            if (isTrophyCaught !== void(0)) {
+                savedTrophySetting[id] = isTrophyCaught;
+            }
+        });
+    }
+    Chara.all.concat().sort(function(x, y){return x.trophyOrder - y.trophyOrder}).slice(0, Chara.all.length - 2).forEach(function(chara) {
         var checkbox = $(document.createElement("input")).attr({
             id: "trophy_setting_" + chara.id,
             type: "checkbox",
             value: chara.id,
         }).on("change", redraw);
-        if (chara.id <= 2) checkbox.prop("checked", true);
+        checkbox.prop("checked", savedTrophySetting[chara.id]);
         $("#trophy_setting").append(checkbox).append(chara.name).append($(document.createElement("br")));
     });
     $("#trophy_all_check").click(function() {
