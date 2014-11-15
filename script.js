@@ -5,6 +5,14 @@ Array.prototype.flatMap = function(flatMapper, thisArg) {
     });
     return result;
 };
+if (!("find" in Array.prototype)) {
+    Array.prototype.find = function(condition, thisArg) {
+        for (var i = 0; i < this.length; i++) {
+            if (condition.call(thisArg, this[i])) return this[i];
+        }
+        return void(0);
+    };
+}
 Array.prototype.groupBy = function(keyMapper) {
     var result = new Hash();
     this.forEach(function(element) {
