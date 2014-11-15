@@ -1,8 +1,8 @@
-Array.prototype.flatMap = function(flatMapper) {
+Array.prototype.flatMap = function(flatMapper, thisArg) {
     var result = [];
     this.forEach(function(element) {
-        Array.prototype.push.apply(result, flatMapper(element));
-    }, this);
+        Array.prototype.push.apply(result, flatMapper.call(thisArg, element));
+    });
     return result;
 };
 Array.prototype.groupBy = function(keyMapper) {
@@ -155,6 +155,23 @@ function Chara(id, name, trophyOrder) {
 }
 Chara.prototype.toString = function() {
     return this.id;
+};
+Chara.prototype.calcDropProbability = function(uncaughtCharas) {
+    return Quest.all.flatMap(function(quest) {
+        return quest.difficulties.filter(function(difficulty){return difficulty.appears(this)}, this).map(function(difficulty) {
+            return [
+                quest.name + "(" + difficulty.name + ")",
+                difficulty.calcDropProbability(uncaughtCharas).toArray().find(function(pair){return pair[0] == this}, this)[1]
+            ];
+        }, this);
+    }, this).toHash();
+};
+Chara.prototype.createLink = function() {
+    var self = this;
+    return $(document.createElement("a")).attr("href", "javascript:void(0);").text(self.name).click(function() {
+        target = self;
+        redraw();
+    });
 };
 Chara.all = [
 new Chara(0, "RIM姉貴", 0),
@@ -342,6 +359,9 @@ function Difficulty(name, waves) {
     this.name = name;
     this.waves = waves;
 }
+Difficulty.prototype.appears = function(chara) {
+    return this.waves.flatMap(f("enemies")).map(f("chara")).includes(chara);
+};
 Difficulty.prototype.calcDropProbability = function(uncaughtCharas) {
     function safeProd() {
         var operands = Array.prototype.slice.call(arguments);
@@ -536,6 +556,7 @@ new Quest(31, "セミ兄貴の森", false, [new Difficulty("EAS", [new Wave([new
 new Quest(32, "妖精の森", false, [new Difficulty("EAS", [new Wave([new Enemy(Chara.all[3], 0.0), new Enemy(Chara.all[47], 0.0)]), new Wave([new Enemy(Chara.all[6], 0.0), new Enemy(Chara.all[46], 0.0)]), new Wave([new Enemy(Chara.all[118], 1.0), new Enemy(Chara.all[119], 1.0), new Enemy(Chara.all[121], 0.0), new Enemy(Chara.all[122], 0.0), new Enemy(Chara.all[120], 0.0)])]), new Difficulty("ADV", [new Wave([new Enemy(Chara.all[3], 0.0), new Enemy(Chara.all[47], 0.0)]), new Wave([new Enemy(Chara.all[6], 0.0), new Enemy(Chara.all[46], 0.0)]), new Wave([new Enemy(Chara.all[5], 1.0), new Enemy(Chara.all[49], 0.0)]), new Wave([new Enemy(Chara.all[118], 1.0), new Enemy(Chara.all[119], 0.51), new Enemy(Chara.all[121], 1.0), new Enemy(Chara.all[122], 1.0), new Enemy(Chara.all[120], 1.0)])]), new Difficulty("EXH", [new Wave([new Enemy(Chara.all[118], 1.0), new Enemy(Chara.all[3], 0.0), new Enemy(Chara.all[3], 0.0), new Enemy(Chara.all[7], 0.0), new Enemy(Chara.all[47], 0.0)]), new Wave([new Enemy(Chara.all[119], 1.0), new Enemy(Chara.all[5], 0.0), new Enemy(Chara.all[6], 0.0), new Enemy(Chara.all[118], 0.0), new Enemy(Chara.all[46], 0.0)]), new Wave([new Enemy(Chara.all[120], 1.0), new Enemy(Chara.all[121], 0.0), new Enemy(Chara.all[123], 1.0), new Enemy(Chara.all[118], 1.0), new Enemy(Chara.all[45], 0.0)]), new Wave([new Enemy(Chara.all[122], 1.0), new Enemy(Chara.all[49], 0.0), new Enemy(Chara.all[5], 1.0), new Enemy(Chara.all[7], 1.0), new Enemy(Chara.all[3], 0.0)]), new Wave([new Enemy(Chara.all[118], 1.0), new Enemy(Chara.all[120], 1.0), new Enemy(Chara.all[121], 1.0), new Enemy(Chara.all[124], 1.0), new Enemy(Chara.all[123], 1.0)])])])
 ];
 
+var target;
 function redraw() {
     mySetCookie("version", 1, 365);
     mySetCookie("trophy_setting", Chara.all.map(function(chara) {
@@ -547,22 +568,41 @@ function redraw() {
     var tbody = $(document.createElement("tbody"));
     var table = $(document.createElement("table")).append(tbody);
 
-    var quest = Quest.all[parseInt($("#quest_setting").val().split(/_/)[0], 10)];
-    var difficulty = quest.difficulties[parseInt($("#quest_setting").val().split(/_/)[1], 10)];
-    difficulty.calcDropProbability(Chara.all.filter(function(chara){return !$("#trophy_setting_" + chara.id).prop("checked")})).toArray().sort(function(x, y){
-        var primaryCondition = y[1][$("#cocoa_setting").val()] - x[1][$("#cocoa_setting").val()];
-        var secondaryCondition = x[0].trophyOrder - y[0].trophyOrder;
-        return primaryCondition * 1000000 + secondaryCondition;
-    }).toHash().forEach(function(chara, dropProbability) {
-        var tr = $(document.createElement("tr")).append(
-          $(document.createElement("th")).text(chara.name)
-        ).append(
-          $(document.createElement("td")).css("font-family", "monospace").text(
-            formatProbability(dropProbability[$("#cocoa_setting").val()])
-          )
-        );
-        tbody.append(tr);
-    });
+    if (target instanceof Difficulty) {
+        target.calcDropProbability(
+          Chara.all.filter(function(chara){return $("#trophy_setting_" + chara.id).prop("checked") !== true})
+        ).toArray().sort(function(x, y){
+            var primaryCondition = y[1][$("#cocoa_setting").val()] - x[1][$("#cocoa_setting").val()];
+            var secondaryCondition = x[0].trophyOrder - y[0].trophyOrder;
+            return primaryCondition != 0 ? primaryCondition : secondaryCondition;
+        }).toHash().forEach(function(chara, dropProbability) {
+            var tr = $(document.createElement("tr")).append(
+              $(document.createElement("th")).append(chara.createLink())
+            ).append(
+              $(document.createElement("td")).css("font-family", "monospace").text(
+                formatProbability(dropProbability[$("#cocoa_setting").val()])
+              )
+            );
+            tbody.append(tr);
+        });
+    } else if (target instanceof Chara) {
+        target.calcDropProbability(
+          Chara.all.filter(function(chara){return $("#trophy_setting_" + chara.id).prop("checked") !== true})
+        ).toArray().sort(function(x, y){
+            var primaryCondition = y[1][$("#cocoa_setting").val()] - x[1][$("#cocoa_setting").val()];
+            var secondaryCondition = x[0].id - y[0].id;
+            return primaryCondition != 0 ? primaryCondition : secondaryCondition;
+        }).toHash().forEach(function(difficultyName, dropProbability) {
+            var tr = $(document.createElement("tr")).append(
+              $(document.createElement("th")).text(difficultyName)
+            ).append(
+              $(document.createElement("td")).css("font-family", "monospace").text(
+                formatProbability(dropProbability[$("#cocoa_setting").val()])
+              )
+            );
+            tbody.append(tr);
+        });
+    }
     
     $("#drop_probability").empty().append(table);
 }
@@ -574,7 +614,12 @@ $(function() {
             $("#quest_setting").append(option);
         });
     });
-    $("#quest_setting").on("change", redraw);
+    $("#quest_setting").on("change", function() {
+        var quest = Quest.all[parseInt($("#quest_setting").val().split(/_/)[0], 10)];
+        var difficulty = quest.difficulties[parseInt($("#quest_setting").val().split(/_/)[1], 10)];
+        target = difficulty;
+        redraw();
+    });
     $("#cocoa_setting").on("change", redraw);
     var savedTrophySetting = Range.closed(0, 2).map(function(){return true}).
         concat(Range.closed(3, 54).map(function(){return false})).
@@ -596,7 +641,7 @@ $(function() {
             value: chara.id,
         }).on("change", redraw);
         checkbox.prop("checked", savedTrophySetting[chara.id]);
-        $("#trophy_setting").append(checkbox).append(chara.name).append($(document.createElement("br")));
+        $("#trophy_setting").append(checkbox).append(chara.createLink()).append($(document.createElement("br")));
     });
     $("#trophy_all_check").click(function() {
         $(":checkbox", $("#trophy_setting")).prop("checked", true);
@@ -606,5 +651,6 @@ $(function() {
         $(":checkbox", $("#trophy_setting")).prop("checked", false);
         redraw();
     });
-    redraw();
+    
+    $("#quest_setting").trigger("change");
 });
