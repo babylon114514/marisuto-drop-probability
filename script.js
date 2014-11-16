@@ -674,10 +674,11 @@ function redraw() {
     var tbody = $(document.createElement("tbody"));
     var table = $(document.createElement("table")).append(tbody);
     var propertyNameForSecondaryCondition = (redrawTarget instanceof Difficulty ? "trophyOrder" : "id");
-
-    redrawTarget.calcDropProbabilities(
+    var dropProbabilities = redrawTarget.calcDropProbabilities(
       Chara.all.filter(function(chara){return $("#trophy_setting_" + chara.id).prop("checked") !== true})
-    ).toArray().sort(function(x, y){
+	).toArray();
+
+    dropProbabilities.sort(function(x, y){
         var primaryCondition = y[1][$("#cocoa_setting").val()] - x[1][$("#cocoa_setting").val()];
         var secondaryCondition = x[0][propertyNameForSecondaryCondition] - y[0][propertyNameForSecondaryCondition];
         return primaryCondition != 0 ? primaryCondition : secondaryCondition;
@@ -691,8 +692,12 @@ function redraw() {
         );
         tbody.append(tr);
     });
-    
-    $("#drop_probability").empty().append(table);
+
+    if (dropProbabilities.length > 0) {
+        $("#drop_probability").empty().append(table);
+    } else {
+        $("#drop_probability").empty().text("（出現クエストが）ないです");
+    }
 }
 
 $(function() {
