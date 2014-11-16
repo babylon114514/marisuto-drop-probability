@@ -395,11 +395,12 @@ Difficulty.prototype.toString = function() {
 };
 Difficulty.prototype.createLink = function() {
     var self = this;
-    return $(document.createElement("a")).attr("href", "javascript:void(0);").text(self.name).click(function() {
+    var link = $(document.createElement("a")).attr("href", "javascript:void(0);").text(self.name).click(function() {
         redrawTarget = self;
         $("#difficulty_setting").val(self.id.toString());
         redraw();
     });
+    return self.finished ? $(document.createElement("del")).append(link) : link;
 };
 Difficulty.prototype.appears = function(chara) {
     return this.enemies.map(f("chara")).includes(chara);
