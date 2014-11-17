@@ -202,7 +202,8 @@ Chara.prototype.calcDropProbabilities = function(uncaughtCharas) {
 Chara.prototype.createLink = function() {
     var self = this;
     return $(document.createElement("a")).attr("href", "javascript:void(0);").text(self.name).click(function() {
-        redrawTarget = self;
+        $("#chara_setting").val(self.id.toString());
+        $("#difficulty_setting").val("-1");
         redraw();
     });
 };
@@ -396,8 +397,8 @@ Difficulty.prototype.toString = function() {
 Difficulty.prototype.createLink = function() {
     var self = this;
     var link = $(document.createElement("a")).attr("href", "javascript:void(0);").text(self.name).click(function() {
-        redrawTarget = self;
         $("#difficulty_setting").val(self.id.toString());
+        $("#chara_setting").val("-1");
         redraw();
     });
     return self.finished ? $(document.createElement("del")).append(link) : link;
@@ -667,16 +668,18 @@ new Difficulty(108, "妖精の森(ADV)", false, [new Enemy(Chara.all[3], 0.0), n
 new Difficulty(109, "妖精の森(EXH)", false, [new Enemy(Chara.all[118], 1.0), new Enemy(Chara.all[3], 0.0), new Enemy(Chara.all[3], 0.0), new Enemy(Chara.all[7], 0.0), new Enemy(Chara.all[47], 0.0), new Enemy(Chara.all[119], 1.0), new Enemy(Chara.all[5], 0.0), new Enemy(Chara.all[6], 0.0), new Enemy(Chara.all[118], 0.0), new Enemy(Chara.all[46], 0.0), new Enemy(Chara.all[120], 1.0), new Enemy(Chara.all[121], 0.0), new Enemy(Chara.all[123], 1.0), new Enemy(Chara.all[118], 1.0), new Enemy(Chara.all[45], 0.0), new Enemy(Chara.all[122], 1.0), new Enemy(Chara.all[49], 0.0), new Enemy(Chara.all[5], 1.0), new Enemy(Chara.all[7], 1.0), new Enemy(Chara.all[3], 0.0), new Enemy(Chara.all[118], 1.0), new Enemy(Chara.all[120], 1.0), new Enemy(Chara.all[121], 1.0), new Enemy(Chara.all[124], 1.0), new Enemy(Chara.all[123], 1.0)])
 ];
 
-var redrawTarget;
 function redraw() {
-    SaveData.save();
+    var difficultyId = parseInt($("#difficulty_setting").val(), 10);
+    var charaId = parseInt($("#chara_setting").val(), 10);
+    if (difficultyId < 0 && charaId < 0) return;
+    var redrawTarget = difficultyId >= 0 ? Difficulty.all[difficultyId] : Chara.all[charaId];
 
     var tbody = $(document.createElement("tbody"));
     var table = $(document.createElement("table")).append(tbody);
     var propertyNameForSecondaryCondition = (redrawTarget instanceof Difficulty ? "trophyOrder" : "id");
     var dropProbabilities = redrawTarget.calcDropProbabilities(
       Chara.all.filter(function(chara){return $("#trophy_setting_" + chara.id).prop("checked") !== true})
-	).toArray();
+    ).toArray();
 
     dropProbabilities.sort(function(x, y){
         var primaryCondition = y[1][$("#cocoa_setting").val()] - x[1][$("#cocoa_setting").val()];
@@ -706,29 +709,45 @@ $(function() {
         $("#difficulty_setting").append(option);
     });
     $("#difficulty_setting").on("change", function() {
-        var difficulty = Difficulty.all[parseInt($("#difficulty_setting").val(), 10)];
-        redrawTarget = difficulty;
+        $("#chara_setting").val("-1");
         redraw();
     });
+
+    Chara.all.concat().sort(function(x, y){return x.trophyOrder - y.trophyOrder}).forEach(function(chara) {
+        var option = $(document.createElement("option")).attr("value", chara.id).text(chara.name);
+        $("#chara_setting").append(option);
+    });
+    $("#chara_setting").on("change", function() {
+        $("#difficulty_setting").val("-1");
+        redraw();
+    });
+
     $("#cocoa_setting").on("change", redraw);
+
     var savedTrophySetting = SaveData.load();
     Chara.all.concat().sort(function(x, y){return x.trophyOrder - y.trophyOrder}).slice(0, Chara.all.length - 2).forEach(function(chara) {
         var checkbox = $(document.createElement("input")).attr({
             id: "trophy_setting_" + chara.id,
             type: "checkbox",
             value: chara.id,
-        }).on("change", redraw);
+        }).on("change", function() {
+            SaveData.save();
+            redraw();
+        });
         checkbox.prop("checked", savedTrophySetting[chara.id]);
-        $("#trophy_setting").append(checkbox).append(chara.createLink()).append($(document.createElement("br")));
+        $("#trophy_setting").append(checkbox).append(" " + chara.name).append($(document.createElement("br")));
     });
     $("#trophy_all_check").click(function() {
         $(":checkbox", $("#trophy_setting")).prop("checked", true);
+        SaveData.save();
         redraw();
     });
     $("#trophy_all_uncheck").click(function() {
         $(":checkbox", $("#trophy_setting")).prop("checked", false);
+        SaveData.save();
         redraw();
     });
     
+    $("#difficulty_setting").val("0");
     $("#difficulty_setting").trigger("change");
 });
