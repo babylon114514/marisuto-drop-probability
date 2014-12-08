@@ -495,8 +495,8 @@ Difficulty.prototype.calcDropProbabilities = function(uncaughtCharas) {
             break;
         case 1:
             dropCandidateCharaInfoSet.forEach(function(charaInfo) {
-                charaHash[charaInfo.chara].cocoaful += eventProbability * charaInfo.density / 3;
-                charaHash[charaInfo.chara].cocoaless += eventProbability * charaInfo.density / 3;
+                charaHash[charaInfo.chara].cocoaful += eventProbability * charaInfo.density;
+                charaHash[charaInfo.chara].cocoaless += eventProbability * charaInfo.density;
             });
             break;
         default:
