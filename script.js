@@ -584,7 +584,7 @@ Difficulty.prototype.calcDropProbabilities = function(uncaughtCharas) {
     return charaHash;
 };
 Difficulty.all = [
-new Difficulty(0, "博麗神社(EAS)", false, [new Enemy(Chara.all[3], 1.0), new Enemy(Chara.all[5], 1.0)]),
+new Difficulty(0, "博麗神社(EAS)", false, [new Enemy(Chara.all[3], 1.0), new Enemy(Chara.all[5], 0.0)]),
 new Difficulty(1, "博麗神社(ADV)", false, [new Enemy(Chara.all[3], 1.0), new Enemy(Chara.all[4], 1.0), new Enemy(Chara.all[3], 1.0), new Enemy(Chara.all[4], 1.0), new Enemy(Chara.all[5], 1.0), new Enemy(Chara.all[6], 1.0)]),
 new Difficulty(2, "博麗神社(EXH)", false, [new Enemy(Chara.all[3], 1.0), new Enemy(Chara.all[4], 1.0), new Enemy(Chara.all[3], 1.0), new Enemy(Chara.all[4], 1.0), new Enemy(Chara.all[3], 1.0), new Enemy(Chara.all[4], 1.0), new Enemy(Chara.all[5], 1.0), new Enemy(Chara.all[6], 1.0), new Enemy(Chara.all[3], 1.0), new Enemy(Chara.all[4], 1.0)]),
 new Difficulty(3, "妖怪の森(EAS)", false, [new Enemy(Chara.all[3], 1.0), new Enemy(Chara.all[6], 1.0), new Enemy(Chara.all[4], 1.0), new Enemy(Chara.all[5], 1.0), new Enemy(Chara.all[7], 0.11), new Enemy(Chara.all[6], 1.0), new Enemy(Chara.all[3], 1.0)]),
