@@ -434,6 +434,7 @@ function Difficulty(id, name, finished, enemies) {
     this.name = name;
     this.finished = finished;
     this.enemies = enemies;
+    this.cache = {};
 }
 Difficulty.prototype.toString = function() {
     return this.id.toString();
@@ -451,6 +452,10 @@ Difficulty.prototype.appears = function(chara) {
     return this.enemies.map(f("chara")).includes(chara);
 };
 Difficulty.prototype.calcDropProbabilities = function(uncaughtCharas) {
+    var cacheKey = uncaughtCharas.map(function(_){return _.toString()}).sort().join(",");
+    if (this.cache.hasOwnProperty(cacheKey)) {
+        return this.cache[cacheKey];
+    }
     function safeProd() {
         var operands = Array.prototype.slice.call(arguments);
         return operands.map(function(pair) {
@@ -597,7 +602,7 @@ Difficulty.prototype.calcDropProbabilities = function(uncaughtCharas) {
             break;
         }
     });
-    return charaHash;
+    return this.cache[cacheKey] = charaHash;
 };
 Difficulty.all = [
 new Difficulty(0, "博麗神社(EAS)", false, [new Enemy(Chara.all[3], 1.0), new Enemy(Chara.all[5], 0.0)]),
