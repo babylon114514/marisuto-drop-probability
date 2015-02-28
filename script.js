@@ -464,7 +464,7 @@ new Chara(252, "前座おじさん", 200),
 new Chara(253, "どん欲な毒ALC", 201),
 new Chara(254, "ハチと化した現場監督", 202),
 new Chara(255, "湯呑と化したRIM", 203),
-new Chara(256, "エグゾディア先輩", 204)
+new Chara(256, "エクゾディア先輩", 204)
 ];
 
 function Enemy(chara, dropCandidateProbabilityAsChara) {
