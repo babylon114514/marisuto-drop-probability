@@ -270,8 +270,8 @@ new Chara(51, "サマーMSTA姉貴", 214),
 new Chara(52, "バレンタインRIM", 218),
 new Chara(53, "バレンタインUDK", 219),
 new Chara(54, "バレンタインALC", 220),
-new Chara(55, "YKR姉貴", 273),
-new Chara(56, "邪神GO", 274),
+new Chara(55, "YKR姉貴", 274),
+new Chara(56, "邪神GO", 275),
 new Chara(57, "SNE姉貴", 149),
 new Chara(58, "SWK様", 150),
 new Chara(59, "風神KNK", 151),
@@ -488,7 +488,8 @@ new Chara(269, "銀閣", 121),
 new Chara(270, "宮永通世", 122),
 new Chara(271, "YUMちゃん", 269),
 new Chara(272, "VVAN姉貴", 270),
-new Chara(273, "YYK様", 272)
+new Chara(273, "YYK様", 272),
+new Chara(274, "サケノミ", 273)
 ];
 
 function Enemy(chara, dropCandidateProbabilityAsChara) {
