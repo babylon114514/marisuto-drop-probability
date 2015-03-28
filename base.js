@@ -572,7 +572,7 @@ Difficulty.prototype.calcDropProbabilities = function(uncaughtCharas) {
         }
     }).map(function(intersection, firstLevelEvents) {
         if (firstLevelEvents.length == 1) return firstLevelEvents[0];
-        
+
         return Range.closed(0, firstLevelEvents.length).map(function(count) {
             return new Hash({
                 charaInfoSet: count == 0 ? [] : firstLevelEvents.map(function(firstLevelEvent) {
@@ -597,7 +597,7 @@ Difficulty.prototype.calcDropProbabilities = function(uncaughtCharas) {
               reduce(SUM, 0);
         var dropCandidateCount = w1DropCandidateCount + w10DropCandidateCount;
         var eventProbability = secondLevelEvents.map(f("probability")).reduce(PROD, 1);
-        
+
         switch (dropCandidateCharaCount) {
         case 0:
             break;
@@ -860,87 +860,3 @@ new Difficulty(176, "BBの森(EAS)", false, [new Enemy(Chara.all[198], 1.0), new
 new Difficulty(177, "BBの森(ADV)", false, [new Enemy(Chara.all[157], 0.31), new Enemy(Chara.all[47], 0.0), new Enemy(Chara.all[3], 0.0), new Enemy(Chara.all[201], 0.31), new Enemy(Chara.all[49], 0.0), new Enemy(Chara.all[200], 1.0), new Enemy(Chara.all[199], 1.0), new Enemy(Chara.all[47], 0.0), new Enemy(Chara.all[104], 0.0), new Enemy(Chara.all[153], 0.0), new Enemy(Chara.all[28], 0.0), new Enemy(Chara.all[202], 0.31), new Enemy(Chara.all[48], 0.0), new Enemy(Chara.all[118], 0.0), new Enemy(Chara.all[120], 0.0), new Enemy(Chara.all[122], 0.0), new Enemy(Chara.all[203], 0.31), new Enemy(Chara.all[45], 0.0), new Enemy(Chara.all[4], 0.0), new Enemy(Chara.all[123], 0.0), new Enemy(Chara.all[198], 1.0)]),
 new Difficulty(178, "BBの森(EXH)", false, [new Enemy(Chara.all[252], 0.31), new Enemy(Chara.all[49], 0.0), new Enemy(Chara.all[118], 0.0), new Enemy(Chara.all[3], 0.0), new Enemy(Chara.all[157], 0.0), new Enemy(Chara.all[7], 0.0), new Enemy(Chara.all[47], 0.0), new Enemy(Chara.all[255], 0.31), new Enemy(Chara.all[198], 0.31), new Enemy(Chara.all[45], 0.31), new Enemy(Chara.all[112], 0.0), new Enemy(Chara.all[50], 0.0), new Enemy(Chara.all[254], 0.31), new Enemy(Chara.all[228], 0.0), new Enemy(Chara.all[253], 0.31), new Enemy(Chara.all[120], 0.0), new Enemy(Chara.all[124], 0.31), new Enemy(Chara.all[118], 0.0), new Enemy(Chara.all[199], 0.31), new Enemy(Chara.all[202], 0.31), new Enemy(Chara.all[203], 0.31), new Enemy(Chara.all[201], 0.31), new Enemy(Chara.all[256], 0.31), new Enemy(Chara.all[200], 0.31), new Enemy(Chara.all[253], 0.31), new Enemy(Chara.all[12], 0.0)])
 ];
-
-function redraw() {
-    var difficultyId = parseInt($("#difficulty_setting").val(), 10);
-    var charaId = parseInt($("#chara_setting").val(), 10);
-    if (difficultyId < 0 && charaId < 0) return;
-    var redrawTarget = difficultyId >= 0 ? Difficulty.all[difficultyId] : Chara.all[charaId];
-
-    var tbody = $(document.createElement("tbody"));
-    var table = $(document.createElement("table")).append(tbody);
-    var propertyNameForSecondaryCondition = (redrawTarget instanceof Difficulty ? "trophyOrder" : "id");
-    var dropProbabilities = redrawTarget.calcDropProbabilities(
-      Chara.all.filter(function(chara){return $("#trophy_setting_" + chara.id).prop("checked") !== true})
-    ).toArray();
-
-    dropProbabilities.sort(function(x, y){
-        var primaryCondition = y[1][$("#cocoa_setting").val()] - x[1][$("#cocoa_setting").val()];
-        var secondaryCondition = x[0][propertyNameForSecondaryCondition] - y[0][propertyNameForSecondaryCondition];
-        return primaryCondition != 0 ? primaryCondition : secondaryCondition;
-    }).toHash().forEach(function(entity, dropProbability) {
-        var tr = $(document.createElement("tr")).append(
-          $(document.createElement("th")).append(entity.createLink())
-        ).append(
-          $(document.createElement("td")).css("font-family", "monospace").text(
-            formatProbability(dropProbability[$("#cocoa_setting").val()])
-          )
-        );
-        tbody.append(tr);
-    });
-
-    if (dropProbabilities.length > 0) {
-        $("#drop_probability").empty().append(table);
-    } else {
-        $("#drop_probability").empty().text("（出現クエストが）ないです");
-    }
-}
-
-$(function() {
-    Difficulty.all.forEach(function(difficulty) {
-        var option = $(document.createElement("option")).attr("value", difficulty.id).text(difficulty.name);
-        $("#difficulty_setting").append(option);
-    });
-    $("#difficulty_setting").on("change", function() {
-        $("#chara_setting").val("-1");
-        redraw();
-    });
-
-    Chara.all.concat().sort(function(x, y){return x.trophyOrder - y.trophyOrder}).forEach(function(chara) {
-        var option = $(document.createElement("option")).attr("value", chara.id).text(chara.name);
-        $("#chara_setting").append(option);
-    });
-    $("#chara_setting").on("change", function() {
-        $("#difficulty_setting").val("-1");
-        redraw();
-    });
-
-    $("#cocoa_setting").on("change", redraw);
-
-    var savedTrophySetting = SaveData.load();
-    Chara.all.filter(function(chara){return savedTrophySetting[chara.id] !== void(0)}).sort(function(x, y){return x.trophyOrder - y.trophyOrder}).forEach(function(chara) {
-        var checkbox = $(document.createElement("input")).attr({
-            id: "trophy_setting_" + chara.id,
-            type: "checkbox",
-            value: chara.id,
-        }).on("change", function() {
-            SaveData.save();
-            redraw();
-        });
-        checkbox.prop("checked", savedTrophySetting[chara.id]);
-        $("#trophy_setting").append(checkbox).append(" " + chara.name).append($(document.createElement("br")));
-    });
-    $("#trophy_all_check").click(function() {
-        $(":checkbox", $("#trophy_setting")).prop("checked", true);
-        SaveData.save();
-        redraw();
-    });
-    $("#trophy_all_uncheck").click(function() {
-        $(":checkbox", $("#trophy_setting")).prop("checked", false);
-        SaveData.save();
-        redraw();
-    });
-    
-    $("#difficulty_setting").val("0");
-    $("#difficulty_setting").trigger("change");
-});

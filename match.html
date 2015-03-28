@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ユニットのドロップ率（対戦版）</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <!--[if lt IE 9]>
+      <script type="text/javascript" src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script type="text/javascript" src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-6">
+          <h1>ユニットのドロップ率（対戦版）</h1>
+          <p>対戦に1回勝利したとき、目当てのユニットがドロップする確率を表示します（Ver.3.6仕様）<br />
+             IE8以下は非対応　<a href="https://github.com/babylon114514/marisuto-drop-probability/commits/gh-pages">更新履歴</a>　<a href="http://ask.fm/babylon114514">不具合報告等連絡先</a>　<a href="index.html">クエスト版</a></p>
+          </ul>
+          <div id="drop_probability"></div>
+        </div>
+        <div class="col-sm-6">
+          <h2>設定</h2>
+          <section>
+            <h3>対戦の種類</h3>
+            <select id="mode_setting">
+              <option value="single">シングルマッチ/訓練</option>
+              <option value="team">チームマッチ</option>
+            </select>
+          </section>
+          <section id="single_mode_chara_settings">
+            <h3>対戦相手</h3>
+            <select id="chara_setting_1"><option value="-1">------</option></select><br />
+            <select id="chara_setting_2"><option value="-1">------</option></select><br />
+            <select id="chara_setting_3"><option value="-1">------</option></select><br />
+            <select id="chara_setting_4"><option value="-1">------</option></select><br />
+            <select id="chara_setting_5"><option value="-1">------</option></select>
+          </section>
+          <section id="team_mode_chara_settings">
+            <h3>対戦相手</h3>
+            <section>
+              <h4>第1チーム</h4>
+              <select id="chara_setting_1_1"><option value="-1">------</option></select><br />
+              <select id="chara_setting_1_2"><option value="-1">------</option></select><br />
+              <select id="chara_setting_1_3"><option value="-1">------</option></select><br />
+              <select id="chara_setting_1_4"><option value="-1">------</option></select><br />
+              <select id="chara_setting_1_5"><option value="-1">------</option></select>
+            </section>
+            <section>
+              <h4>第2チーム</h4>
+              <select id="chara_setting_2_1"><option value="-1">------</option></select><br />
+              <select id="chara_setting_2_2"><option value="-1">------</option></select><br />
+              <select id="chara_setting_2_3"><option value="-1">------</option></select><br />
+              <select id="chara_setting_2_4"><option value="-1">------</option></select><br />
+              <select id="chara_setting_2_5"><option value="-1">------</option></select>
+            </section>
+            <section>
+              <h4>第3チーム</h4>
+              <select id="chara_setting_3_1"><option value="-1">------</option></select><br />
+              <select id="chara_setting_3_2"><option value="-1">------</option></select><br />
+              <select id="chara_setting_3_3"><option value="-1">------</option></select><br />
+              <select id="chara_setting_3_4"><option value="-1">------</option></select><br />
+              <select id="chara_setting_3_5"><option value="-1">------</option></select>
+            </section>
+          </section>
+          <section>
+            <h3>トロフィー獲得状況</h3>
+            <input type="button" id="trophy_all_check" value="全て入手済" />
+            <input type="button" id="trophy_all_uncheck" value="全て未入手" />
+            <div id="trophy_setting"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="base.js?1427560525"></script>
+    <script type="text/javascript" src="match.js?1427560525"></script>
+  </body>
+</html>
