@@ -175,6 +175,10 @@ function formatProbability(probability) {
     if (str.match(/\u00A0{3}(\d)/)) return "\u00A0\u00A00." + RegExp.$1 + "%"
     return str.slice(0, 3) + "." + str.charAt(3) + "%"
 }
+function formatExpectation(expectation) {
+    expectation = Math.round(expectation * 1000) / 1000;
+    return (expectation.toString() + (expectation % 1 == 0 ? "." : "") + "000").slice(0, 5);
+}
 function C(n, r) {
     return Range.closed(n - r + 1, n).reduce(PROD, 1) / Range.closed(1, r).reduce(PROD, 1);
 }
@@ -546,7 +550,9 @@ Difficulty.prototype.calcDropProbabilities = function(uncaughtCharas) {
             return number;
         };
     })();
-    var charaHash = this.enemies.map(f("chara")).uniq().map(function(chara){return [chara, {cocoaful: 0, cocoaless: 0}]}).toHash();
+    var charaHash = this.enemies.map(f("chara")).uniq().map(function(chara) {
+        return [chara, {cocoaful: {singleDrop: 0, doubleDrop: 0}, cocoaless: {singleDrop: 0, doubleDrop: 0}}];
+    }).toHash();
     this.enemies.groupBy(f("chara")).map(function(chara, enemies) {
         return [
             new Hash({
@@ -603,22 +609,24 @@ Difficulty.prototype.calcDropProbabilities = function(uncaughtCharas) {
             break;
         case 1:
             dropCandidateCharaInfoSet.forEach(function(charaInfo) {
-                charaHash[charaInfo.chara].cocoaful += eventProbability * charaInfo.density;
-                charaHash[charaInfo.chara].cocoaless += eventProbability * charaInfo.density;
+                charaHash[charaInfo.chara].cocoaful.singleDrop += eventProbability * charaInfo.density;
+                charaHash[charaInfo.chara].cocoaless.singleDrop += eventProbability * charaInfo.density;
             });
             break;
         default:
-            function calcDropProbability(w1, w10, selfWeight) {
+            function calcSingleDropProbability(w1, w10, selfWeight) {
                 return safeProd(
                     [selfWeight, dropCandidateCount]
                 ) +
                 safeProd(
                     [w1, dropCandidateCount],
-                    [selfWeight, dropCandidateCount - 1]
+                    [selfWeight, dropCandidateCount - 1],
+                    [2 * (dropCandidateCount - 1 - selfWeight), (dropCandidateCount - 1) + (dropCandidateCount - 1 - selfWeight)]
                 ) +
                 safeProd(
                     [w10, dropCandidateCount],
-                    [selfWeight, dropCandidateCount - 10]
+                    [selfWeight, dropCandidateCount - 10],
+                    [2 * (dropCandidateCount - 10 - selfWeight), (dropCandidateCount - 10) + (dropCandidateCount - 10 - selfWeight)]
                 ) +
                 safeProd(
                     [w1, dropCandidateCount],
@@ -653,26 +661,26 @@ Difficulty.prototype.calcDropProbabilities = function(uncaughtCharas) {
                     [selfWeight, (dropCandidateCount - 10) + (dropCandidateCount - 10 - selfWeight)]
                 );
             }
-            // ココアが十分あるとき1個以上ドロップする確率
-            var cocoafulDropProbability = {
-                "1": calcDropProbability(w1DropCandidateCount - 1, w10DropCandidateCount, 1),
-                "10": calcDropProbability(w1DropCandidateCount, w10DropCandidateCount - 10, 10)
+            // クォクォアが十分あるとき1個ドロップする確率
+            var cocoafulSingleDropProbability = {
+                "1": calcSingleDropProbability(w1DropCandidateCount - 1, w10DropCandidateCount, 1),
+                "10": calcSingleDropProbability(w1DropCandidateCount, w10DropCandidateCount - 10, 10)
             };
-            // ココアが十分あるとき2個ドロップする確率
+            // クォクォアが十分あるとき2個ドロップする確率
             var cocoafulDoubleDropProbability = {
                 "1": calcDoubleDropProbability(w1DropCandidateCount - 1, w10DropCandidateCount, 1),
                 "10": calcDoubleDropProbability(w1DropCandidateCount, w10DropCandidateCount - 10, 10)
             }
-            // ココアが不足しているとき1個以上ドロップする確率
-            var cocoalessDropProbability = {
-                "1":  (1 / 3) * (cocoafulDropProbability["1"] - cocoafulDoubleDropProbability["1"]) +
-                      (2 / 3) * cocoafulDoubleDropProbability["1"],
-                "10": (1 / 3) * (cocoafulDropProbability["10"] - cocoafulDoubleDropProbability["10"]) +
-                      (2 / 3) * cocoafulDoubleDropProbability["10"]
+            // クォクォアが不足しているとき1個ドロップする確率
+            var cocoalessSingleDropProbability = {
+                "1":  (1 / 3) * cocoafulSingleDropProbability["1"] + (2 / 3) * cocoafulDoubleDropProbability["1"],
+                "10":  (1 / 3) * cocoafulSingleDropProbability["10"] + (2 / 3) * cocoafulDoubleDropProbability["10"]
             };
             dropCandidateCharaInfoSet.forEach(function(charaInfo) {
-                charaHash[charaInfo.chara].cocoaful += eventProbability * charaInfo.density * cocoafulDropProbability[charaInfo.weight];
-                charaHash[charaInfo.chara].cocoaless += eventProbability * charaInfo.density * cocoalessDropProbability[charaInfo.weight];
+                var correctedEventProbability = eventProbability * charaInfo.density;
+                charaHash[charaInfo.chara].cocoaful.singleDrop += correctedEventProbability * cocoafulSingleDropProbability[charaInfo.weight];
+                charaHash[charaInfo.chara].cocoaful.doubleDrop += correctedEventProbability * cocoafulDoubleDropProbability[charaInfo.weight];
+                charaHash[charaInfo.chara].cocoaless.singleDrop += correctedEventProbability * cocoalessSingleDropProbability[charaInfo.weight];
             });
             break;
         }

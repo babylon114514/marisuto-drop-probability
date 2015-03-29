@@ -29,15 +29,13 @@ function redraw() {
     ).toArray();
 
     dropProbabilities.sort(function(x, y){
-        var primaryCondition = y[1].cocoaful - x[1].cocoaful;
-        var secondaryCondition = x[0].trophyOrder - y[0].trophyOrder;
-        return primaryCondition != 0 ? primaryCondition : secondaryCondition;
+        return x[0].trophyOrder - y[0].trophyOrder;
     }).toHash().forEach(function(chara, dropProbability) {
         var tr = $(document.createElement("tr")).append(
           $(document.createElement("th")).text(chara.name)
         ).append(
           $(document.createElement("td")).css("font-family", "monospace").text(
-            formatProbability(dropProbability.cocoaful)
+            "\u00A0" + formatExpectation(dropProbability.cocoaful.singleDrop + 2 * dropProbability.cocoaful.doubleDrop) + "体/戦"
           )
         );
         tbody.append(tr);

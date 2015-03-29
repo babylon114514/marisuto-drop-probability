@@ -12,7 +12,7 @@ function redraw() {
     ).toArray();
 
     dropProbabilities.sort(function(x, y){
-        var primaryCondition = y[1][$("#cocoa_setting").val()] - x[1][$("#cocoa_setting").val()];
+        var primaryCondition = (y[1][$("#cocoa_setting").val()].singleDrop + y[1][$("#cocoa_setting").val()].doubleDrop) - (x[1][$("#cocoa_setting").val()].singleDrop + x[1][$("#cocoa_setting").val()].doubleDrop);
         var secondaryCondition = x[0][propertyNameForSecondaryCondition] - y[0][propertyNameForSecondaryCondition];
         return primaryCondition != 0 ? primaryCondition : secondaryCondition;
     }).toHash().forEach(function(entity, dropProbability) {
@@ -20,7 +20,7 @@ function redraw() {
           $(document.createElement("th")).append(entity.createLink())
         ).append(
           $(document.createElement("td")).css("font-family", "monospace").text(
-            formatProbability(dropProbability[$("#cocoa_setting").val()])
+            formatProbability(dropProbability[$("#cocoa_setting").val()].singleDrop + dropProbability[$("#cocoa_setting").val()].doubleDrop)
           )
         );
         tbody.append(tr);
