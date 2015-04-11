@@ -511,7 +511,7 @@ new Chara(288, "ホットラインSKY", 150),
 new Chara(289, "スカーレット田中", 151),
 new Chara(290, "SIG姉貴", 195),
 new Chara(291, "FTちゃん", 196),
-new Chara(292, "TYSTMMMK姉貴", 197)
+new Chara(292, "TYSTMMNMK姉貴", 197)
 ];
 
 function Enemy(chara, dropCandidateProbabilityAsChara) {
