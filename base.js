@@ -275,7 +275,7 @@ new Chara(52, "バレンタインRIM", 231),
 new Chara(53, "バレンタインUDK", 232),
 new Chara(54, "バレンタインALC", 233),
 new Chara(55, "YKR姉貴", 284),
-new Chara(56, "邪神GO", 295),
+new Chara(56, "邪神GO", 296),
 new Chara(57, "SNE姉貴", 159),
 new Chara(58, "SWK様", 160),
 new Chara(59, "風神KNK", 161),
@@ -514,7 +514,8 @@ new Chara(291, "FTちゃん", 196),
 new Chara(292, "TYSTMMNMK姉貴", 197),
 new Chara(293, "肉丸くん", 292),
 new Chara(294, "肉丸の先輩", 293),
-new Chara(295, "バルカン大先輩", 294)
+new Chara(295, "バルカン大先輩", 294),
+new Chara(296, "SWK様の服のカエル", 295)
 ];
 
 function Item(id, name, ruby) {
