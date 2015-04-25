@@ -175,10 +175,6 @@ function formatProbability(probability) {
     if (str.match(/\u00A0{3}(\d)/)) return "\u00A0\u00A00." + RegExp.$1 + "%"
     return str.slice(0, 3) + "." + str.charAt(3) + "%"
 }
-function formatExpectation(expectation) {
-    expectation = Math.round(expectation * 1000) / 1000;
-    return (expectation.toString() + (expectation % 1 == 0 ? "." : "") + "000").slice(0, 5);
-}
 function C(n, r) {
     return Range.closed(n - r + 1, n).reduce(PROD, 1) / Range.closed(1, r).reduce(PROD, 1);
 }
