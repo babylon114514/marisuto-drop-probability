@@ -131,42 +131,53 @@ function myGetCookie(key) {
         var end = cookie.indexOf(";", start);
         value = decodeURIComponent(cookie.substring(start, end));
     }
-    var valueAsNumber = Number(value);
-    if (isNaN(valueAsNumber)) return value;
-    return valueAsNumber;
+    return value;
 }
 
 var SaveData = {
-    latestVersion: 2,
-    save: function() {
+    latestVersion: 3,
+    save: function(json) {
         mySetCookie("version", SaveData.latestVersion, 365);
-        mySetCookie("trophy_setting", Chara.all.map(function(chara) {
-            return $("#trophy_setting_" + chara.id);
-        }).map(function(checkbox) {
-            return checkbox.size() == 0 ? "x" : Number(checkbox.prop("checked")).toString();
+        mySetCookie("charas", json.charas.map(function(hasChara) {
+            return hasChara === void(0) ? "x" : Number(hasChara).toString();
+        }).join(""), 365);
+        mySetCookie("items", json.items.map(function(hasItem) {
+            return Number(hasItem).toString();
         }).join(""), 365);
     },
     load: function() {
-        var savedTrophySetting = Range.closed(0, 2).map(function(){return true}).
-            concat(Range.closed(3, 55).map(function(){return false})).
-            concat(Range.closed(56, 56).map(function(){return void(0)})).
-            concat(Range.closed(57, Chara.all.length - 1).map(function(){return false}));
-        if(myGetCookie("trophy_setting") !== void(0)) {
-            myGetCookie("trophy_setting").split("").map(function(flg){
+        var saveDataVersion = myGetCookie("version") === void(0) ? SaveData.latestVersion : parseInt(myGetCookie("version"), 10);
+        var json = {
+            charas: Range.closed(0, 2).map(function(){return true}).
+                      concat(Range.closed(3, 55).map(function(){return false})).
+                      concat(Range.closed(56, 56).map(function(){return void(0)})).
+                      concat(Range.closed(57, Chara.all.length - 1).map(function(){return false})),
+            items: Range.closed(0, 2).map(function(){return true}).
+                     concat(Range.closed(3, Item.all.length - 1).map(function(){return false}))
+        };
+        if (saveDataVersion <= 2) {
+            mySetCookie("version", 3);
+            mySetCookie("charas", myGetCookie("trophy_setting"), 365);
+            mySetCookie("trophy_setting", "", -1);
+            mySetCookie("items", json.items.map(function(hasItem){return Number(hasItem).toString()}).join(""), 365);
+        }
+        if(myGetCookie("charas") !== void(0)) {
+            myGetCookie("charas").split("").map(function(flg){
                 return (flg == "x") ? void(0) : (flg == "1");
-            }).forEach(function(isTrophyCaught, id) {
-                if (isTrophyCaught !== void(0)) {
-                    savedTrophySetting[id] = isTrophyCaught;
+            }).forEach(function(hasChara, id) {
+                if (hasChara !== void(0)) {
+                    json.charas[id] = hasChara;
                 }
             });
         }
-
-        var saveDataVersion = myGetCookie("version") === void(0) ? SaveData.latestVersion : myGetCookie("version");
-        if (saveDataVersion == 1) {
-            savedTrophySetting[55] = false;
+        if(myGetCookie("items") !== void(0)) {
+            myGetCookie("items").split("").map(function(flg){
+                return flg == "1";
+            }).forEach(function(hasItem, id) {
+                json.items[id] = hasItem;
+            });
         }
-
-        return savedTrophySetting;
+        return json;
     }
 };
 
@@ -199,20 +210,12 @@ Chara.prototype.toString = function() {
     return this.id;
 };
 Chara.prototype.calcDropProbabilities = function(uncaughtCharas) {
-    return Difficulty.all.filter(function(difficulty){return difficulty.appears(this)}, this).map(function(difficulty) {
+    return Difficulty.all.filter(function(difficulty){return difficulty.appearsAsChara(this)}, this).map(function(difficulty) {
         return [
             difficulty,
-            difficulty.calcDropProbabilities(uncaughtCharas).toArray().find(function(pair){return pair[0] == this}, this)[1]
+            difficulty.calcDropProbabilitiesOfCharas(uncaughtCharas).toArray().find(function(pair){return pair[0] == this}, this)[1]
         ];
     }, this).toHash();
-};
-Chara.prototype.createLink = function() {
-    var self = this;
-    return $(document.createElement("a")).attr("href", "javascript:void(0);").text(self.name).click(function() {
-        $("#chara_setting").val(self.id.toString());
-        $("#difficulty_setting").val("-1");
-        redraw();
-    });
 };
 Chara.all = [
 new Chara(0, "RIM姉貴", 0),
@@ -519,95 +522,103 @@ new Chara(300, "白豚", 155),
 new Chara(301, "超覚醒KMR", 156)
 ];
 
-function Item(id, name, ruby) {
+function Item(id, name, rubyOrder) {
     this.id = id;
     this.name = name;
-    this.ruby = ruby;
+    this.rubyOrder = rubyOrder;
 }
 Item.prototype.toString = function() {
     return this.id;
 };
+Item.prototype.calcDropProbabilities = function(uncaughtItems) {
+    return Difficulty.all.filter(function(difficulty){return difficulty.appearsAsItem(this)}, this).map(function(difficulty) {
+        return [
+            difficulty,
+            difficulty.calcDropProbabilitiesOfItems(uncaughtItems).toArray().find(function(pair){return pair[0] == this}, this)[1]
+        ];
+    }, this).toHash();
+};
 Item.all = [
-new Item(0, "クソデカ湯呑", "くそでかゆのみ"),
-new Item(1, "ミニ八卦炉", "みにはっけろ"),
-new Item(2, "ブラウニー", "ぶらうにー"),
-new Item(3, "神の棒読み", "かみのぼうよみ"),
-new Item(4, "九番茶", "きゅうばんちゃ"),
-new Item(5, "ルーミアのリボン", "るーみあのりぼん"),
-new Item(6, "スピアザグングニル", "すぴあざぐんぐにる"),
-new Item(7, "レーヴァテイン", "れーゔぁていん"),
-new Item(8, "早口おばさんの傘", "はやくちおばさんのかさ"),
-new Item(9, "やわらかスマホ", "やわらかすまほ"),
-new Item(10, "レシート", "れしーと"),
-new Item(11, "斬髪刀", "ざんぱつとう"),
-new Item(12, "ナルガメイル", "なるがめいる"),
-new Item(13, "其為右手", "そのためのみぎて"),
-new Item(14, "店長のムチ", "てんちょうのむち"),
-new Item(15, "テニスボール", "てにすぼーる"),
-new Item(16, "トヨタ・センチュリー", "とよたせんちゅりー"),
-new Item(17, "サイバーゴーグル", "さいばーごーぐる"),
-new Item(18, "守矢のお払い棒", "もりやのおはらいぼう"),
-new Item(19, "ハリボテボーイ1号", "はりぼてぼーいいちごう"),
-new Item(20, "法界の巻物", "ほっかいのまきもの"),
-new Item(21, "ラヴォイル", "らゔぉいる"),
-new Item(22, "変身ベルト", "へんしんべると"),
-new Item(23, "だいこん", "だいこん"),
-new Item(24, "お酒", "おさけ"),
-new Item(25, "カツオ", "かつお"),
-new Item(26, "まんじゅう", "まんじゅう"),
-new Item(27, "一般通過自転車", "いっぱんつうかじてんしゃ"),
-new Item(28, "ルナダイアル", "るなだいある"),
-new Item(29, "いなり", "いなり"),
-new Item(30, "山田うどん", "やまだうどん"),
-new Item(31, "生の裏技", "せいのうらわざ"),
-new Item(32, "釣り竿", "つりざお"),
-new Item(33, "フル焼きそば", "ふるやきそば"),
-new Item(34, "おきらくリンチ", "おきらくりんち"),
-new Item(35, "ヤクザガン", "やくざがん"),
-new Item(36, "ぴかぴかステッキ", "ぴかぴかすてっき"),
-new Item(37, "最強とんがりコーン", "さいきょうとんがりこーん"),
-new Item(38, "あんかけチャーハン", "あんかけちゃーはん"),
-new Item(39, "TDNアーマー", "ただのあーまー"),
-new Item(40, "真実の愛", "しんじつのあい"),
-new Item(41, "妖剣シルバーブレード", "ようけんしるばーぶれーど"),
-new Item(42, "お菓子", "おかし"),
-new Item(43, "クリームブリュッレ", "くりーむぶりゅっれ"),
-new Item(44, "英雄の証", "えいゆうのあかし"),
-new Item(45, "神の棒読み（迫真）", "かみのぼうよみ（はくしん）"),
-new Item(46, "鼻セレブ", "はなせれぶ"),
-new Item(47, "洗濯ばさみ", "せんたくばさみ"),
-new Item(48, "阿久氏井戸フルコース", "あくしいどふるこーす"),
-new Item(49, "はっぱ", "はっぱ"),
-new Item(50, "ビール", "びーる"),
-new Item(51, "ブルーベリー", "ぶるーべりー"),
-new Item(52, "ぎゅうにゅう", "ぎゅうにゅう"),
-new Item(53, "ひょうたん", "ひょうたん"),
-new Item(54, "椅子くん", "いすくん"),
-new Item(55, "ナズーリンロッド", "なずーりんろっど"),
-new Item(56, "オーバーザレインボウ", "おーばーざれいんぼう"),
-new Item(57, "不徳の法輪", "ふとくのほうりん"),
-new Item(58, "道連れアンカー", "みちづれあんかー"),
-new Item(59, "レーザー宝塔", "れーざーほうとう"),
-new Item(60, "スターソードの護法", "すたーそーどのごほう"),
-new Item(61, "クボタイト鉱石", "くぼたいとこうせき"),
-new Item(62, "あずま寿司", "あずますし"),
-new Item(63, "日ペ社員証", "にっぺしゃいんしょう"),
-new Item(64, "元祖一転攻勢", "がんそいってんこうせい"),
-new Item(65, "邪剣・夜逝魔衝音", "じゃけんよるいきましょうね"),
-new Item(66, "黒い突起物", "くろいとっきぶつ"),
-new Item(67, "ささみのから揚げ", "ささみのからあげ"),
-new Item(68, "希望の面", "きぼうのめん"),
-new Item(69, "サケノミ人形", "さけのみにんぎょう"),
-new Item(70, "伸縮性ボクサーブリーフ", "しんしゅくせいぼくさーぶりーふ"),
-new Item(71, "もみじソード", "もみじそーど"),
-new Item(72, "座薬", "ざやく"),
-new Item(73, "大ダメージジーンズ", "だいだめーじじーんず"),
-new Item(74, "ドラゴン田中の七つ道具", "どらごんたなかのななつどうぐ"),
-new Item(75, "仙風大皿", "せんぷうおおざら"),
-new Item(76, "壁抜けのノミ", "かべぬけののみ"),
-new Item(77, "七星剣", "しちせいけん"),
-new Item(78, "しゃべり稽古", "しゃべりげいこ"),
-new Item(79, "天下無敵ライター", "てんかむてきらいたー")
+new Item(0, "クソデカ湯呑", 19),
+new Item(1, "ミニ八卦炉", 67),
+new Item(2, "ブラウニー", 61),
+new Item(3, "神の棒読み", 13),
+new Item(4, "九番茶", 17),
+new Item(5, "ルーミアのリボン", 76),
+new Item(6, "スピアザグングニル", 35),
+new Item(7, "レーヴァテイン", 79),
+new Item(8, "早口おばさんの傘", 54),
+new Item(9, "やわらかスマホ", 72),
+new Item(10, "レシート", 77),
+new Item(11, "斬髪刀", 28),
+new Item(12, "ナルガメイル", 50),
+new Item(13, "其為右手", 39),
+new Item(14, "店長のムチ", 46),
+new Item(15, "テニスボール", 44),
+new Item(16, "トヨタ・センチュリー", 47),
+new Item(17, "サイバーゴーグル", 24),
+new Item(18, "守矢のお払い棒", 69),
+new Item(19, "ハリボテボーイ1号", 55),
+new Item(20, "法界の巻物", 64),
+new Item(21, "ラヴォイル", 74),
+new Item(22, "変身ベルト", 63),
+new Item(23, "だいこん", 41),
+new Item(24, "お酒", 9),
+new Item(25, "カツオ", 11),
+new Item(26, "まんじゅう", 65),
+new Item(27, "一般通過自転車", 4),
+new Item(28, "ルナダイアル", 75),
+new Item(29, "いなり", 5),
+new Item(30, "山田うどん", 71),
+new Item(31, "生の裏技", 36),
+new Item(32, "釣り竿", 43),
+new Item(33, "フル焼きそば", 60),
+new Item(34, "おきらくリンチ", 8),
+new Item(35, "ヤクザガン", 70),
+new Item(36, "ぴかぴかステッキ", 58),
+new Item(37, "最強とんがりコーン", 23),
+new Item(38, "あんかけチャーハン", 2),
+new Item(39, "TDNアーマー", 40),
+new Item(40, "真実の愛", 32),
+new Item(41, "妖剣シルバーブレード", 73),
+new Item(42, "お菓子", 7),
+new Item(43, "クリームブリュッレ", 21),
+new Item(44, "英雄の証", 6),
+new Item(45, "神の棒読み（迫真）", 14),
+new Item(46, "鼻セレブ", 53),
+new Item(47, "洗濯ばさみ", 37),
+new Item(48, "阿久氏井戸フルコース", 0),
+new Item(49, "はっぱ", 52),
+new Item(50, "ビール", 57),
+new Item(51, "ブルーベリー", 62),
+new Item(52, "ぎゅうにゅう", 18),
+new Item(53, "ひょうたん", 56),
+new Item(54, "椅子くん", 3),
+new Item(55, "ナズーリンロッド", 49),
+new Item(56, "オーバーザレインボウ", 10),
+new Item(57, "不徳の法輪", 59),
+new Item(58, "道連れアンカー", 66),
+new Item(59, "レーザー宝塔", 78),
+new Item(60, "スターソードの護法", 34),
+new Item(61, "クボタイト鉱石", 20),
+new Item(62, "あずま寿司", 1),
+new Item(63, "日ペ社員証", 51),
+new Item(64, "元祖一転攻勢", 15),
+new Item(65, "邪剣・夜逝魔衝音", 33),
+new Item(66, "黒い突起物", 22),
+new Item(67, "ささみのから揚げ", 26),
+new Item(68, "希望の面", 16),
+new Item(69, "サケノミ人形", 25),
+new Item(70, "伸縮性ボクサーブリーフ", 31),
+new Item(71, "もみじソード", 68),
+new Item(72, "座薬", 27),
+new Item(73, "大ダメージジーンズ", 42),
+new Item(74, "ドラゴン田中の七つ道具", 48),
+new Item(75, "仙風大皿", 38),
+new Item(76, "壁抜けのノミ", 12),
+new Item(77, "七星剣", 29),
+new Item(78, "しゃべり稽古", 30),
+new Item(79, "天下無敵ライター", 45)
 ];
 
 function Enemy(chara, dropCandidateProbabilityAsChara, item, dropCandidateProbabilityAsItem) {
@@ -622,27 +633,24 @@ function Difficulty(id, name, finished, enemies) {
     this.name = name;
     this.finished = finished;
     this.enemies = enemies;
-    this.cache = {};
+    this.cache = {
+        calcDropProbabilitiesOfCharas: {},
+        calcDropProbabilitiesOfItems: {}
+    };
 }
 Difficulty.prototype.toString = function() {
     return this.id.toString();
 };
-Difficulty.prototype.createLink = function() {
-    var self = this;
-    var link = $(document.createElement("a")).attr("href", "javascript:void(0);").text(self.name).click(function() {
-        $("#difficulty_setting").val(self.id.toString());
-        $("#chara_setting").val("-1");
-        redraw();
-    });
-    return self.finished ? $(document.createElement("del")).append(link) : link;
-};
-Difficulty.prototype.appears = function(chara) {
+Difficulty.prototype.appearsAsChara = function(chara) {
     return this.enemies.map(f("chara")).includes(chara);
 };
-Difficulty.prototype.calcDropProbabilities = function(uncaughtCharas) {
+Difficulty.prototype.appearsAsItem = function(item) {
+    return this.enemies.map(f("item")).filter(function(item){return item !== null}).includes(item);
+};
+Difficulty.prototype.calcDropProbabilitiesOfCharas = function(uncaughtCharas) {
     var cacheKey = uncaughtCharas.map(function(_){return _.toString()}).sort().join(",");
-    if (this.cache.hasOwnProperty(cacheKey)) {
-        return this.cache[cacheKey];
+    if (this.cache.calcDropProbabilitiesOfCharas.hasOwnProperty(cacheKey)) {
+        return this.cache.calcDropProbabilitiesOfCharas[cacheKey];
     }
     function safeProd() {
         var operands = Array.prototype.slice.call(arguments);
@@ -794,7 +802,69 @@ Difficulty.prototype.calcDropProbabilities = function(uncaughtCharas) {
             break;
         }
     });
-    return this.cache[cacheKey] = charaHash;
+    return this.cache.calcDropProbabilitiesOfCharas[cacheKey] = charaHash;
+};
+Difficulty.prototype.calcDropProbabilitiesOfItems = function(uncaughtItems) {
+    var cacheKey = uncaughtItems.map(function(_){return _.toString()}).sort().join(",");
+    if (this.cache.calcDropProbabilitiesOfItems.hasOwnProperty(cacheKey)) {
+        return this.cache.calcDropProbabilitiesOfItems[cacheKey];
+    }
+    var generateUniqueNumber = (function() {
+        var number = -1;
+        return function() {
+            number++;
+            return number;
+        };
+    })();
+    var itemHash = this.enemies.map(f("item")).filter(function(item){return item !== null}).uniq().map(function(item) {
+        return [item, {cocoaful: 0, cocoaless: 0}];
+    }).toHash();
+    this.enemies.filter(function(enemy){return uncaughtItems.includes(enemy.item)}).groupBy(f("item")).map(function(item, enemies) {
+        return [
+            new Hash({
+                itemInfoSet: [new Hash({item: item, density: 1})],
+                probability: 1 - enemies.map(function(enemy){return 1 - enemy.dropCandidateProbabilityAsItem}).reduce(PROD, 1)
+            }),
+            new Hash({
+                itemInfoSet: [],
+                probability: enemies.map(function(enemy){return 1 - enemy.dropCandidateProbabilityAsItem}).reduce(PROD, 1)
+            })
+        ].filter(function(secondLevelEvent){return secondLevelEvent.probability > 0});
+    }).filter(function(firstLevelEvent) {
+        return !(firstLevelEvent.length == 1 && firstLevelEvent[0].itemInfoSet.isEmpty());
+    }).groupBy(function(firstLevelEvent) {
+        switch (firstLevelEvent.length) {
+        case 1:
+            return generateUniqueNumber();
+        case 2:
+            return new Hash({
+                probability: firstLevelEvent[0].probability
+            });
+        }
+    }).map(function(intersection, firstLevelEvents) {
+        if (firstLevelEvents.length == 1) return firstLevelEvents[0];
+
+        return Range.closed(0, firstLevelEvents.length).map(function(count) {
+            return new Hash({
+                itemInfoSet: count == 0 ? [] : firstLevelEvents.map(function(firstLevelEvent) {
+                    var itemInfoSet = firstLevelEvent[0].itemInfoSet[0].clone();
+                    itemInfoSet.density = count / firstLevelEvents.length;
+                    return itemInfoSet;
+                }),
+                probability: C(firstLevelEvents.length, count) *
+                    Math.pow(intersection.probability, count) * Math.pow(1 - intersection.probability, firstLevelEvents.length - count)
+            });
+        });
+    }).product(function(secondLevelEvents) {
+        var dropCandidateItemInfoSet = secondLevelEvents.flatMap(f("itemInfoSet"));
+        var dropCandidateItemCount = dropCandidateItemInfoSet.map(f("density")).reduce(SUM, 0);
+        var eventProbability = secondLevelEvents.map(f("probability")).reduce(PROD, 1);
+        dropCandidateItemInfoSet.forEach(function(itemInfo) {
+            var correctedEventProbability = eventProbability * itemInfo.density;
+            itemHash[itemInfo.item].cocoaful += correctedEventProbability * (1 / dropCandidateItemCount);
+        });
+    });
+    return this.cache.calcDropProbabilitiesOfItems[cacheKey] = itemHash;
 };
 Difficulty.all = [
 new Difficulty(0, "博麗神社(EAS)", false, [new Enemy(Chara.all[3], 1.0, null, 0.0), new Enemy(Chara.all[5], 0.0, null, 0.0)]),
