@@ -30,6 +30,7 @@ function redraw() {
                 $("#difficulty_setting").val("-1");
                 redraw();
             });
+            if ($("#trophy_setting_" + entity.id).prop("checked")) link = $(document.createElement("del")).append(link);
         }
         var tr = $(document.createElement("tr")).append(
           $(document.createElement("th")).append(link)
