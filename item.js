@@ -1,4 +1,21 @@
 function redraw() {
+    var oldValue = $("#item_setting").val();
+    $("#item_setting").empty();
+    $("#item_setting").append($(document.createElement("option")).attr("value", "-1").text("------"));
+    ["未入手", "入手済"].forEach(function(optGroupLabel) {
+        var optGroup = $(document.createElement("optgroup")).attr("label", optGroupLabel);
+        Item.all.filter(function(item) {
+            return $("#trophy_setting_" + item.id).prop("checked") == (optGroupLabel == "入手済");
+        }).sort(function(x, y) {
+            return x.rubyOrder - y.rubyOrder;
+        }).forEach(function(item) {
+            var option = $(document.createElement("option")).attr("value", item.id).text(item.name);
+            optGroup.append(option);
+        });
+        $("#item_setting").append(optGroup);
+    });
+    $("#item_setting").val(oldValue);
+
     var difficultyId = parseInt($("#difficulty_setting").val(), 10);
     var itemId = parseInt($("#item_setting").val(), 10);
     if (difficultyId < 0 && itemId < 0) return;
@@ -19,7 +36,7 @@ function redraw() {
             formatProbability(dropProbabilities.map(function(x){return x[1][$("#cocoa_setting").val()]}).reduce(function(sum, x){return sum + x}, 0))
           )
         );
-	    tbody.append(tr);
+        tbody.append(tr);
     }
 
     dropProbabilities.sort(function(x, y){
@@ -80,10 +97,6 @@ $(function() {
         redraw();
     });
 
-    Item.all.concat().sort(function(x, y){return x.rubyOrder - y.rubyOrder}).forEach(function(item) {
-        var option = $(document.createElement("option")).attr("value", item.id).text(item.name);
-        $("#item_setting").append(option);
-    });
     $("#item_setting").on("change", function() {
         $("#difficulty_setting").val("-1");
         redraw();
