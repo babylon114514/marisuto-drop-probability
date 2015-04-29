@@ -11,6 +11,17 @@ function redraw() {
       Item.all.filter(function(item){return !$("#trophy_setting_" + item.id).prop("checked")})
     ).toArray();
 
+    if (redrawTarget instanceof Difficulty) {
+        var tr = $(document.createElement("tr")).append(
+          $(document.createElement("th")).text("何でもいいのでアイテム1個")
+        ).append(
+          $(document.createElement("td")).css("font-family", "monospace").text(
+            formatProbability(dropProbabilities.map(function(x){return x[1][$("#cocoa_setting").val()]}).reduce(function(sum, x){return sum + x}, 0))
+          )
+        );
+	    tbody.append(tr);
+    }
+
     dropProbabilities.sort(function(x, y){
         var primaryCondition = y[1][$("#cocoa_setting").val()] - x[1][$("#cocoa_setting").val()];
         var secondaryCondition = x[0][propertyNameForSecondaryCondition] - y[0][propertyNameForSecondaryCondition];
@@ -42,14 +53,10 @@ function redraw() {
         tbody.append(tr);
     });
 
-    if (dropProbabilities.length > 0) {
+    if (tbody.children().size() > 0) {
         $("#drop_probability").empty().append(table);
     } else {
-        if (redrawTarget instanceof Difficulty) {
-            $("#drop_probability").empty().text("（アイテムを持った敵がい）ないです");
-        } else {
-            $("#drop_probability").empty().text("（出現クエストが）ないです");
-        }
+        $("#drop_probability").empty().text("（出現クエストが）ないです");
     }
 }
 function save() {
