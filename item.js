@@ -131,3 +131,21 @@ $(function() {
     $("#difficulty_setting").val("0");
     $("#difficulty_setting").trigger("change");
 });
+
+function loadFromSaveData(saveData) {
+    var itemHash = {};
+    Item.all.forEach(function(item) {
+        itemHash[item.idAsString] = item;
+    });
+
+    $(":checkbox", $("#trophy_setting")).prop("checked", false);
+    saveData.split(/::/).find(function(p) {return p.split(/==/)[0] == "my_item"}).split(/==/)[1].split(/##/).forEach(function(trophy) {
+        if (itemHash.hasOwnProperty(trophy)) {
+            $("#trophy_setting_" + itemHash[trophy].id).prop("checked", true);
+        }
+    });
+
+    save();
+    redraw();
+    alert("セーブデータからアイテム獲得状況をロードしました");
+}

@@ -106,3 +106,21 @@ $(function() {
     $("#difficulty_setting").val("0");
     $("#difficulty_setting").trigger("change");
 });
+
+function loadFromSaveData(saveData) {
+    var charaHash = {};
+    Chara.all.forEach(function(chara) {
+        charaHash[chara.idAsString] = chara;
+    });
+
+    $(":checkbox", $("#trophy_setting")).prop("checked", false);
+    saveData.split(/::/).find(function(p) {return p.split(/==/)[0] == "trophy_list"}).split(/==/)[1].split(/##/).forEach(function(trophy) {
+        if (charaHash.hasOwnProperty(trophy)) {
+            $("#trophy_setting_" + charaHash[trophy].id).prop("checked", true);
+        }
+    });
+
+    save();
+    redraw();
+    alert("セーブデータからトロフィー獲得状況をロードしました");
+}
