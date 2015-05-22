@@ -52,7 +52,7 @@ function save() {
         charas: Chara.all.map(function(chara) {
             return $("#trophy_setting_" + chara.id);
         }).map(function(checkbox) {
-            return checkbox.size() == 0 ? void(0) : checkbox.prop("checked");
+            return checkbox.prop("checked");
         }),
         items: SaveData.load().items
     });
@@ -80,7 +80,7 @@ $(function() {
     $("#cocoa_setting").on("change", redraw);
 
     var savedTrophySetting = SaveData.load().charas;
-    Chara.all.filter(function(chara){return savedTrophySetting[chara.id] !== void(0)}).sort(function(x, y){return x.trophyOrder - y.trophyOrder}).forEach(function(chara) {
+    Chara.all.concat().sort(function(x, y){return x.trophyOrder - y.trophyOrder}).forEach(function(chara) {
         var checkbox = $(document.createElement("input")).attr({
             id: "trophy_setting_" + chara.id,
             type: "checkbox",
