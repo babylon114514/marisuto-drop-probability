@@ -1128,39 +1128,3 @@ new Difficulty(208, "BBの森(EAS)", false, [new Enemy(Chara.all[198], 1.0, null
 new Difficulty(209, "BBの森(ADV)", false, [new Enemy(Chara.all[157], 0.31, null, 0.0), new Enemy(Chara.all[47], 0.0, null, 0.0), new Enemy(Chara.all[3], 0.0, null, 0.0), new Enemy(Chara.all[201], 0.31, null, 0.0), new Enemy(Chara.all[49], 0.0, Item.all[20], 0.01), new Enemy(Chara.all[200], 1.0, Item.all[17], 1.0), new Enemy(Chara.all[199], 1.0, Item.all[16], 1.0), new Enemy(Chara.all[47], 0.0, Item.all[4], 0.01), new Enemy(Chara.all[104], 0.0, Item.all[52], 0.01), new Enemy(Chara.all[153], 0.0, Item.all[7], 0.01), new Enemy(Chara.all[28], 0.0, Item.all[18], 0.01), new Enemy(Chara.all[202], 0.31, Item.all[52], 0.31), new Enemy(Chara.all[48], 0.0, Item.all[30], 0.01), new Enemy(Chara.all[118], 0.0, Item.all[37], 0.01), new Enemy(Chara.all[120], 0.0, Item.all[12], 0.01), new Enemy(Chara.all[122], 0.0, Item.all[39], 0.01), new Enemy(Chara.all[203], 0.31, Item.all[21], 0.31), new Enemy(Chara.all[45], 0.0, null, 0.0), new Enemy(Chara.all[4], 0.0, null, 0.0), new Enemy(Chara.all[123], 0.0, Item.all[35], 0.01), new Enemy(Chara.all[198], 1.0, Item.all[30], 1.0)]),
 new Difficulty(210, "BBの森(EXH)", false, [new Enemy(Chara.all[252], 0.31, Item.all[33], 0.31), new Enemy(Chara.all[49], 0.0, Item.all[67], 0.01), new Enemy(Chara.all[118], 0.0, Item.all[39], 0.01), new Enemy(Chara.all[3], 0.0, Item.all[35], 0.01), new Enemy(Chara.all[157], 0.0, Item.all[67], 0.01), new Enemy(Chara.all[7], 0.0, Item.all[30], 0.01), new Enemy(Chara.all[47], 0.0, Item.all[12], 0.01), new Enemy(Chara.all[255], 0.31, null, 0.0), new Enemy(Chara.all[198], 0.31, Item.all[0], 0.31), new Enemy(Chara.all[45], 0.31, Item.all[67], 0.31), new Enemy(Chara.all[112], 0.0, Item.all[6], 0.01), new Enemy(Chara.all[50], 0.0, Item.all[52], 0.01), new Enemy(Chara.all[254], 0.31, Item.all[54], 0.31), new Enemy(Chara.all[228], 0.0, Item.all[49], 0.01), new Enemy(Chara.all[253], 0.31, Item.all[1], 0.31), new Enemy(Chara.all[120], 0.0, Item.all[15], 0.01), new Enemy(Chara.all[124], 0.31, Item.all[16], 0.31), new Enemy(Chara.all[118], 0.0, Item.all[39], 0.01), new Enemy(Chara.all[199], 0.31, Item.all[59], 0.31), new Enemy(Chara.all[202], 0.31, null, 0.0), new Enemy(Chara.all[203], 0.31, null, 0.0), new Enemy(Chara.all[201], 0.31, null, 0.0), new Enemy(Chara.all[256], 0.31, Item.all[60], 0.31), new Enemy(Chara.all[200], 0.31, Item.all[49], 0.31), new Enemy(Chara.all[253], 0.31, Item.all[1], 0.31), new Enemy(Chara.all[12], 0.0, Item.all[27], 0.01)])
 ];
-
-$(function() {
-    var konamiState = 0;
-    $(document.body).keydown(function(e) {
-        var konamiKeyCodes = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
-        if (e.keyCode == konamiKeyCodes[konamiState]) konamiState++;
-        else konamiState = 0;
-
-        if (konamiState == konamiKeyCodes.length) {
-            konamiState = 0;
-            konamiCommand();
-        }
-    });
-
-    function konamiCommand() {
-        var userId = prompt("あなたのまりストアカウントのIDを入力してください");
-        if (userId === null) return;
-        var password = prompt("あなたのまりストアカウントのパスワードを入力してください");
-        if (password === null) return;
-
-        $.get("http://sitappagames.zombie.jp/udk_story/udk/user_data/" + CryptoJS.MD5(userId).toString() + "/" + CryptoJS.MD5(password).toString() + ".txt?i=" + new Date().getTime(), function(data) {
-            if (data.responseText.length > 0) {
-                loadFromSaveData(CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Base64.parse($(data.responseText).text())));
-                return;
-            }
-            $.get("http://sitappagames.zombie.jp/udk_story/udk/user_data2/" + CryptoJS.MD5(userId).toString() + "/" + CryptoJS.MD5(password).toString() + ".txt?i=" + new Date().getTime(), function(data2) {
-                if (data2.responseText.length > 0) {
-                    loadFromSaveData(CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Base64.parse($(data2.responseText).text())));
-                    return;
-                }
-
-                alert("セーブデータの読み込みに失敗しました。");
-            });
-        });
-    }
-});

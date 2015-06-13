@@ -127,6 +127,32 @@ $(function() {
         save();
         redraw();
     });
+    $("#trophy_import").click(function() {
+        if (!confirm("まりストのセーブデータからアイテム獲得状況をインポートします。\nインポートにはまりストアカウントのIDとパスワードを入力する必要があります。\n（IDとパスワードの情報はアイテム獲得状況のインポート以外には使用しません）")) return;
+        var userId = prompt("あなたのまりストアカウントのIDを入力してください");
+        if (userId === null) return;
+        var password = prompt("あなたのまりストアカウントのパスワードを入力してください");
+        if (password === null) return;
+
+        $("#trophy_import").prop("disabled", true);
+        $("#trophy_import").css("color", "#999999");
+        $.get("http://sitappagames.zombie.jp/udk_story/udk/user_data/" + CryptoJS.MD5(userId).toString() + "/" + CryptoJS.MD5(password).toString() + ".txt?i=" + new Date().getTime(), function(data) {
+            if (data.responseText.length > 0) {
+                loadFromSaveData(CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Base64.parse($(data.responseText).text())));
+                return;
+            }
+            $.get("http://sitappagames.zombie.jp/udk_story/udk/user_data2/" + CryptoJS.MD5(userId).toString() + "/" + CryptoJS.MD5(password).toString() + ".txt?i=" + new Date().getTime(), function(data2) {
+                if (data2.responseText.length > 0) {
+                    loadFromSaveData(CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Base64.parse($(data2.responseText).text())));
+                    return;
+                }
+
+                alert("セーブデータの読み込みに失敗しました。");
+                $("#trophy_import").prop("disabled", false);
+                $("#trophy_import").css("color", "#000000");
+            });
+        });
+    });
 
     $("#difficulty_setting").val("0");
     $("#difficulty_setting").trigger("change");
@@ -147,5 +173,6 @@ function loadFromSaveData(saveData) {
 
     save();
     redraw();
-    alert("セーブデータからアイテム獲得状況をロードしました");
+    $("#trophy_import").prop("disabled", false);
+    $("#trophy_import").css("color", "#000000");
 }
