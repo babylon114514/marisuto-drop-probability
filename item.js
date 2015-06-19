@@ -134,24 +134,42 @@ $(function() {
         var password = prompt("あなたのまりストアカウントのパスワードを入力してください");
         if (password === null) return;
 
+        function getMarisutoSaveData(url, success, error, complete) {
+            $.ajax({
+                url: "http://query.yahooapis.com/v1/public/yql",
+                data: {
+                    q: "select * from html where url='" + url + "'",
+                    format: "json"
+                },
+                success: function(data) {
+                    if (data.query.results !== null) {
+                        success(data.query.results.body);
+                    } else {
+                        error();
+                    }
+                },
+                error: error,
+                complete: complete
+            });
+        }
+        function onError() {
+            alert("セーブデータの読み込みに失敗しました。");
+        }
+        function onComplete() {
+            $("#trophy_import").prop("disabled", false);
+            $("#trophy_import").css("color", "#000000");
+        }
+        
         $("#trophy_import").prop("disabled", true);
         $("#trophy_import").css("color", "#999999");
-        $.get("http://sitappagames.zombie.jp/udk_story/udk/user_data/" + CryptoJS.MD5(userId).toString() + "/" + CryptoJS.MD5(password).toString() + ".txt?i=" + new Date().getTime(), function(data) {
-            if (data.responseText.length > 0) {
-                loadFromSaveData(CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Base64.parse($(data.responseText).text())));
-                return;
-            }
-            $.get("http://sitappagames.zombie.jp/udk_story/udk/user_data2/" + CryptoJS.MD5(userId).toString() + "/" + CryptoJS.MD5(password).toString() + ".txt?i=" + new Date().getTime(), function(data2) {
-                if (data2.responseText.length > 0) {
-                    loadFromSaveData(CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Base64.parse($(data2.responseText).text())));
-                    return;
-                }
-
-                alert("セーブデータの読み込みに失敗しました。");
-                $("#trophy_import").prop("disabled", false);
-                $("#trophy_import").css("color", "#000000");
-            });
-        });
+        getMarisutoSaveData("http://sitappagames.zombie.jp/udk_story/udk/user_data/" + CryptoJS.MD5(userId).toString() + "/" + CryptoJS.MD5(password).toString() + ".txt", function(saveData) {
+            loadFromSaveData(CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Base64.parse(saveData)));
+            onComplete();
+        }, function() {
+            getMarisutoSaveData("http://sitappagames.zombie.jp/udk_story/udk/user_data2/" + CryptoJS.MD5(userId).toString() + "/" + CryptoJS.MD5(password).toString() + ".txt", function(saveData) {
+                loadFromSaveData(CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Base64.parse(saveData)));
+            }, onError, onComplete);
+        }, function() {});
     });
 
     $("#difficulty_setting").val("0");
