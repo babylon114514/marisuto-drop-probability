@@ -576,7 +576,8 @@ new Chara(357, "honsya2", "ニコニコ池袋本社", 173),
 new Chara(358, "kaikin", "ニコニコ超会金", 174),
 new Chara(359, "tettou", "鉄塔先輩", 211),
 new Chara(360, "tyuban2", "ニワトリスレイヤー", 212),
-new Chara(361, "msta3", "無理無理MSTA", 290)
+new Chara(361, "msta3", "無理無理MSTA", 290),
+new Chara(362, "murcat", "MUR猫", 362)
 ];
 
 function Item(id, idAsString, name, rubyOrder) {
