@@ -622,7 +622,8 @@ new Chara(403, "kys2", "スーパーカズヤ", 404),
 new Chara(404, "chali", "フェアリーチャリオット", 405),
 new Chara(405, "cloud2", "クラウド（淫夢）", 406),
 new Chara(406, "nswk", "ナイトメアSWK様", 400),
-new Chara(407, "smd", "島田部長", 407)
+new Chara(407, "smd", "島田部長", 407),
+new Chara(408, "puchi", "ぷちどる先輩", 408)
 ];
 
 function Item(id, idAsString, name, rubyOrder) {
