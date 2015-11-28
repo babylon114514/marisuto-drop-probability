@@ -625,9 +625,10 @@ new Chara(406, "nswk", "ナイトメアSWK様", 400),
 new Chara(407, "smd", "島田部長", 407),
 new Chara(408, "puchi", "ぷちどる先輩", 408),
 new Chara(409, "susi", "COOKIE食べたいUDK", 409),
-new Chara(410, "susi2", "ICETEA飲みたい先輩", 410),
-new Chara(411, "susi3", "INARI食べたい関クレ", 411),
-new Chara(412, "susi4", "SUSHI中盤に出てくる鳥", 412)
+new Chara(410, "susi2", "ICETEA飲みたい先輩", 411),
+new Chara(411, "susi3", "INARI食べたい関クレ", 412),
+new Chara(412, "susi4", "SUSHI中盤に出てくる鳥", 410),
+new Chara(413, "ohomo", "オホモアイルー", 413)
 ];
 
 function Item(id, idAsString, name, rubyOrder) {
