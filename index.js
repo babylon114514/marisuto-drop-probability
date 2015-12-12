@@ -1,35 +1,36 @@
 function redraw() {
-    var difficultyId = parseInt($("#difficulty_setting").val(), 10);
+    var gachaKind = $("#gacha_setting").val() == "null" ? null : $("#gacha_setting").val().match(/Scout/) ? Scout : Difficulty;
+    var gachaId = $("#gacha_setting").val() == "null" ? null : parseInt($("#gacha_setting").val().match(/\d+/)[0], 10);
     var charaId = parseInt($("#chara_setting").val(), 10);
-    if (difficultyId < 0 && charaId < 0) return;
-    var redrawTarget = difficultyId >= 0 ? Difficulty.all[difficultyId] : Chara.all[charaId];
+    if (gachaKind === null && charaId < 0) return;
+    var redrawTarget = gachaKind !== null ? gachaKind.all[gachaId] : Chara.all[charaId];
 
     var tbody = $(document.createElement("tbody"));
     var table = $(document.createElement("table")).append(tbody);
-    var propertyNameForSecondaryCondition = (redrawTarget instanceof Difficulty ? "trophyOrder" : "id");
-    var dropProbabilities = redrawTarget["calcDropProbabilities" + (redrawTarget instanceof Difficulty ? "OfCharas" : "")](
+    var propertyNameForSecondaryCondition = (redrawTarget instanceof Chara ? "id" : "trophyOrder");
+    var dropProbabilities = redrawTarget["calcDropProbabilities" + (redrawTarget instanceof Chara ? "" : "OfCharas")](
       Chara.all.filter(function(chara){return $("#trophy_setting_" + chara.id).prop("checked") !== true})
     ).toArray();
 
     dropProbabilities.sort(function(x, y){
         var primaryCondition = (y[1][$("#cocoa_setting").val()].singleDrop + y[1][$("#cocoa_setting").val()].doubleDrop) - (x[1][$("#cocoa_setting").val()].singleDrop + x[1][$("#cocoa_setting").val()].doubleDrop);
         var secondaryCondition = x[0][propertyNameForSecondaryCondition] - y[0][propertyNameForSecondaryCondition];
-        return primaryCondition != 0 ? primaryCondition : secondaryCondition;
+        return x[0] instanceof Scout ? -1 : y[0] instanceof Scout ? 1 : primaryCondition != 0 ? primaryCondition : secondaryCondition;
     }).toHash().forEach(function(entity, dropProbability) {
         var link;
-        if (entity instanceof Difficulty) {
+        if (entity instanceof Chara) {
             link = $(document.createElement("a")).attr("href", "javascript:void(0);").text(entity.name).click(function() {
-                $("#difficulty_setting").val(entity.id.toString());
+                $("#chara_setting").val(entity.id.toString());
+                $("#gacha_setting").val("null");
+                redraw();
+            });
+        } else {
+            link = $(document.createElement("a")).attr("href", "javascript:void(0);").text(entity.name).click(function() {
+                $("#gacha_setting").val(entity.toString());
                 $("#chara_setting").val("-1");
                 redraw();
             });
             if (entity.finished) link = $(document.createElement("del")).append(link);
-        } else {
-            link = $(document.createElement("a")).attr("href", "javascript:void(0);").text(entity.name).click(function() {
-                $("#chara_setting").val(entity.id.toString());
-                $("#difficulty_setting").val("-1");
-                redraw();
-            });
         }
         var tr = $(document.createElement("tr")).append(
           $(document.createElement("th")).append(link)
@@ -44,7 +45,7 @@ function redraw() {
     if (dropProbabilities.length > 0) {
         $("#drop_probability").empty().append(table);
     } else {
-        $("#drop_probability").empty().text("（出現クエストが）ないです");
+        $("#drop_probability").empty().text("（出現スカウトも出現クエストも）ないです");
     }
 }
 function save() {
@@ -59,11 +60,15 @@ function save() {
 }
 
 $(function() {
-    Difficulty.all.forEach(function(difficulty) {
-        var option = $(document.createElement("option")).attr("value", difficulty.id).text(difficulty.name);
-        $("#difficulty_setting").append(option);
+    [Scout, Difficulty].forEach(function(gachaKind) {
+        var optGroup = $(document.createElement("optgroup")).attr("label", gachaKind == Scout ? "スカウト" : "クエスト");
+        gachaKind.all.forEach(function(gacha) {
+            var option = $(document.createElement("option")).attr("value", gacha.toString()).text(gacha.name);
+            optGroup.append(option);
+        });
+        $("#gacha_setting").append(optGroup);
     });
-    $("#difficulty_setting").on("change", function() {
+    $("#gacha_setting").on("change", function() {
         $("#chara_setting").val("-1");
         redraw();
     });
@@ -73,7 +78,7 @@ $(function() {
         $("#chara_setting").append(option);
     });
     $("#chara_setting").on("change", function() {
-        $("#difficulty_setting").val("-1");
+        $("#gacha_setting").val("null");
         redraw();
     });
 
@@ -147,8 +152,8 @@ $(function() {
         }, function() {});
     });
 
-    $("#difficulty_setting").val("0");
-    $("#difficulty_setting").trigger("change");
+    $("#gacha_setting").val("Scout0");
+    $("#gacha_setting").trigger("change");
 });
 
 function loadFromSaveData(saveData) {
