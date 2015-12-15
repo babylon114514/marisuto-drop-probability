@@ -873,12 +873,12 @@ Difficulty.prototype.calcDropProbabilitiesOfCharas = function(uncaughtCharas) {
     this.enemies.groupBy(f("chara")).map(function(chara, enemies) {
         return [
             new Hash({
-                charaInfoSet: [new Hash({chara: chara, density: 1, weight: uncaughtCharas.includes(chara) ? 10 : 1})],
-                probability: 1 - enemies.map(function(enemy){return 1 - enemy.dropCandidateProbabilityAsChara}).reduce(PROD, 1)
-            }),
-            new Hash({
                 charaInfoSet: [],
                 probability: enemies.map(function(enemy){return 1 - enemy.dropCandidateProbabilityAsChara}).reduce(PROD, 1)
+            }),
+            new Hash({
+                charaInfoSet: [new Hash({chara: chara, density: 1, weight: uncaughtCharas.includes(chara) ? 10 : 1})],
+                probability: 1 - enemies.map(function(enemy){return 1 - enemy.dropCandidateProbabilityAsChara}).reduce(PROD, 1)
             })
         ].filter(function(secondLevelEvent){return secondLevelEvent.probability > 0});
     }).filter(function(firstLevelEvent) {
@@ -889,8 +889,8 @@ Difficulty.prototype.calcDropProbabilitiesOfCharas = function(uncaughtCharas) {
             return generateUniqueNumber();
         case 2:
             return new Hash({
-                probability: firstLevelEvent[0].probability,
-                weight: firstLevelEvent[0].charaInfoSet[0].weight
+                probability: firstLevelEvent[1].probability,
+                weight: firstLevelEvent[1].charaInfoSet[0].weight
             });
         }
     }).map(function(intersection, firstLevelEvents) {
@@ -899,12 +899,57 @@ Difficulty.prototype.calcDropProbabilitiesOfCharas = function(uncaughtCharas) {
         return Range.closed(0, firstLevelEvents.length).map(function(count) {
             return new Hash({
                 charaInfoSet: count == 0 ? [] : firstLevelEvents.map(function(firstLevelEvent) {
-                    var charaInfoSet = firstLevelEvent[0].charaInfoSet[0].clone();
-                    charaInfoSet.density = count / firstLevelEvents.length;
-                    return charaInfoSet;
+                    var newCharaInfo = firstLevelEvent[1].charaInfoSet[0].clone();
+                    newCharaInfo.density = count / firstLevelEvents.length;
+                    return newCharaInfo;
                 }),
                 probability: C(firstLevelEvents.length, count) *
                     Math.pow(intersection.probability, count) * Math.pow(1 - intersection.probability, firstLevelEvents.length - count)
+            });
+        });
+    }).groupBy(function(firstLevelEvent) {
+        switch (firstLevelEvent.length) {
+        case 1:
+            return generateUniqueNumber();
+        default:
+            return new Hash({
+                weight: firstLevelEvent[1].charaInfoSet[0].weight
+            });
+        }
+    }).map(function(intersection, firstLevelEvents) {
+        if (firstLevelEvents.length == 1) return firstLevelEvents[0];
+
+        return firstLevelEvents.reduce(function(reducedFirstLevelEvent, firstLevelEvent) {
+            return Range.closed(0, (reducedFirstLevelEvent.length - 1) + (firstLevelEvent.length - 1)).map(function(count) {
+                var partialCountRange = Range.closed(
+                    Math.max(0, count - (firstLevelEvent.length - 1)),
+                    Math.min(reducedFirstLevelEvent.length - 1, count)
+                );
+                var probability = partialCountRange.map(function(partialCount) {
+                    return reducedFirstLevelEvent[partialCount].probability *
+                        firstLevelEvent[count - partialCount].probability;
+                }).reduce(SUM, 0);
+
+                return new Hash({
+                    charaInfoSet: count == 0 ? [] : reducedFirstLevelEvent[1].charaInfoSet.map(function(charaInfo, i) {
+                        var newCharaInfo = charaInfo.clone();
+                        newCharaInfo.density = partialCountRange.map(function(partialCount) {
+                            return reducedFirstLevelEvent[partialCount].probability *
+                                firstLevelEvent[count - partialCount].probability *
+                                (partialCount == 0 ? 0 : reducedFirstLevelEvent[partialCount].charaInfoSet[i].density);
+                        }).reduce(SUM, 0) / probability;
+                        return newCharaInfo;
+                    }).concat(firstLevelEvent[1].charaInfoSet.map(function(charaInfo, i) {
+                        var newCharaInfo = charaInfo.clone();
+                        newCharaInfo.density = partialCountRange.map(function(partialCount) {
+                            return reducedFirstLevelEvent[partialCount].probability *
+                                firstLevelEvent[count - partialCount].probability *
+                                (count - partialCount == 0 ? 0 : firstLevelEvent[count - partialCount].charaInfoSet[i].density);
+                        }).reduce(SUM, 0) / probability;
+                        return newCharaInfo;
+                    })),
+                    probability: probability
+                });
             });
         });
     }).product(function(secondLevelEvents) {
@@ -1022,12 +1067,12 @@ Difficulty.prototype.calcDropProbabilitiesOfItems = function(uncaughtItems) {
     this.enemies.filter(function(enemy){return uncaughtItems.includes(enemy.item)}).groupBy(f("item")).map(function(item, enemies) {
         return [
             new Hash({
-                itemInfoSet: [new Hash({item: item, density: 1})],
-                probability: 1 - enemies.map(function(enemy){return 1 - enemy.dropCandidateProbabilityAsItem}).reduce(PROD, 1)
-            }),
-            new Hash({
                 itemInfoSet: [],
                 probability: enemies.map(function(enemy){return 1 - enemy.dropCandidateProbabilityAsItem}).reduce(PROD, 1)
+            }),
+            new Hash({
+                itemInfoSet: [new Hash({item: item, density: 1})],
+                probability: 1 - enemies.map(function(enemy){return 1 - enemy.dropCandidateProbabilityAsItem}).reduce(PROD, 1)
             })
         ].filter(function(secondLevelEvent){return secondLevelEvent.probability > 0});
     }).filter(function(firstLevelEvent) {
@@ -1038,7 +1083,7 @@ Difficulty.prototype.calcDropProbabilitiesOfItems = function(uncaughtItems) {
             return generateUniqueNumber();
         case 2:
             return new Hash({
-                probability: firstLevelEvent[0].probability
+                probability: firstLevelEvent[1].probability
             });
         }
     }).map(function(intersection, firstLevelEvents) {
@@ -1047,12 +1092,55 @@ Difficulty.prototype.calcDropProbabilitiesOfItems = function(uncaughtItems) {
         return Range.closed(0, firstLevelEvents.length).map(function(count) {
             return new Hash({
                 itemInfoSet: count == 0 ? [] : firstLevelEvents.map(function(firstLevelEvent) {
-                    var itemInfoSet = firstLevelEvent[0].itemInfoSet[0].clone();
-                    itemInfoSet.density = count / firstLevelEvents.length;
-                    return itemInfoSet;
+                    var newItemInfoSet = firstLevelEvent[1].itemInfoSet[0].clone();
+                    newItemInfoSet.density = count / firstLevelEvents.length;
+                    return newItemInfoSet;
                 }),
                 probability: C(firstLevelEvents.length, count) *
                     Math.pow(intersection.probability, count) * Math.pow(1 - intersection.probability, firstLevelEvents.length - count)
+            });
+        });
+    }).groupBy(function(firstLevelEvent) {
+        switch (firstLevelEvent.length) {
+        case 1:
+            return generateUniqueNumber();
+        default:
+            return "all other events";
+        }
+    }).map(function(intersection, firstLevelEvents) {
+        if (firstLevelEvents.length == 1) return firstLevelEvents[0];
+
+        return firstLevelEvents.reduce(function(reducedFirstLevelEvent, firstLevelEvent) {
+            return Range.closed(0, (reducedFirstLevelEvent.length - 1) + (firstLevelEvent.length - 1)).map(function(count) {
+                var partialCountRange = Range.closed(
+                    Math.max(0, count - (firstLevelEvent.length - 1)),
+                    Math.min(reducedFirstLevelEvent.length - 1, count)
+                );
+                var probability = partialCountRange.map(function(partialCount) {
+                    return reducedFirstLevelEvent[partialCount].probability *
+                        firstLevelEvent[count - partialCount].probability;
+                }).reduce(SUM, 0);
+
+                return new Hash({
+                    itemInfoSet: count == 0 ? [] : reducedFirstLevelEvent[1].itemInfoSet.map(function(itemInfo, i) {
+                        var newItemInfo = itemInfo.clone();
+                        newItemInfo.density = partialCountRange.map(function(partialCount) {
+                            return reducedFirstLevelEvent[partialCount].probability *
+                                firstLevelEvent[count - partialCount].probability *
+                                (partialCount == 0 ? 0 : reducedFirstLevelEvent[partialCount].itemInfoSet[i].density);
+                        }).reduce(SUM, 0) / probability;
+                        return newItemInfo;
+                    }).concat(firstLevelEvent[1].itemInfoSet.map(function(itemInfo, i) {
+                        var newItemInfo = itemInfo.clone();
+                        newItemInfo.density = partialCountRange.map(function(partialCount) {
+                            return reducedFirstLevelEvent[partialCount].probability *
+                                firstLevelEvent[count - partialCount].probability *
+                                (count - partialCount == 0 ? 0 : firstLevelEvent[count - partialCount].itemInfoSet[i].density);
+                        }).reduce(SUM, 0) / probability;
+                        return newItemInfo;
+                    })),
+                    probability: probability
+                });
             });
         });
     }).product(function(secondLevelEvents) {
