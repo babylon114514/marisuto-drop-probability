@@ -178,9 +178,10 @@ var SaveData = {
 };
 
 function formatProbability(probability) {
-    var str = ("\u00A0\u00A0\u00A0\u00A0" + Math.round(probability * 1000)).slice(-4)
-    if (str.match(/\u00A0{3}(\d)/)) return "\u00A0\u00A00." + RegExp.$1 + "%"
-    return str.slice(0, 3) + "." + str.charAt(3) + "%"
+    var probability10000x = Math.round(probability * 10000);
+    var str = probability10000x < 100 ? ("00" + probability10000x.toString()).slice(-3) : probability10000x.toString();
+    str = ("\u00A0\u00A0\u00A0\u00A0" + str).slice(-5);
+    return str.slice(0, 3) + "." + str.slice(3, 5) + "%";
 }
 function C(n, r) {
     return Range.closed(n - r + 1, n).reduce(PROD, 1) / Range.closed(1, r).reduce(PROD, 1);
