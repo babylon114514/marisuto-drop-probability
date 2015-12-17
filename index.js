@@ -89,7 +89,7 @@ $(function() {
         var checkbox = $(document.createElement("input")).attr({
             id: "trophy_setting_" + chara.id,
             type: "checkbox",
-            value: chara.id,
+            value: chara.id
         }).on("change", function() {
             save();
             redraw();
@@ -109,9 +109,9 @@ $(function() {
     });
     $("#trophy_import").click(function() {
         if (!confirm("まりストのセーブデータからトロフィー獲得状況をインポートします。\nインポートにはまりストアカウントのIDとパスワードを入力する必要があります。\n（IDとパスワードの情報はトロフィー獲得状況のインポート以外には使用しません）")) return;
-        var userId = prompt("あなたのまりストアカウントのIDを入力してください");
+        var userId = prompt("あなたのまりストアカウントのIDを入力してください", "");
         if (userId === null) return;
-        var password = prompt("あなたのまりストアカウントのパスワードを入力してください");
+        var password = prompt("あなたのまりストアカウントのパスワードを入力してください", "");
         if (password === null) return;
 
         function getMarisutoSaveData(url, success, error, complete) {
