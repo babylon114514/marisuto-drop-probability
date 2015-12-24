@@ -17,23 +17,25 @@ function redraw() {
         var secondaryCondition = x[0][propertyNameForSecondaryCondition] - y[0][propertyNameForSecondaryCondition];
         return x[0] instanceof Scout ? -1 : y[0] instanceof Scout ? 1 : primaryCondition != 0 ? primaryCondition : secondaryCondition;
     }).toHash().forEach(function(entity, dropProbability) {
-        var link;
+        var item;
         if (entity instanceof Chara) {
-            link = $(document.createElement("a")).attr("href", "javascript:void(0);").text(entity.name).click(function() {
+            item = $(document.createElement("a")).attr("href", "javascript:void(0);").text(entity.name).click(function() {
                 $("#chara_setting").val(entity.id.toString());
                 $("#gacha_setting").val("null");
                 redraw();
             });
+        } else if (entity instanceof NonPlayableChara) {
+            item = document.createTextNode(entity.name);
         } else {
-            link = $(document.createElement("a")).attr("href", "javascript:void(0);").text(entity.name).click(function() {
+            item = $(document.createElement("a")).attr("href", "javascript:void(0);").text(entity.name).click(function() {
                 $("#gacha_setting").val(entity.toString());
                 $("#chara_setting").val("-1");
                 redraw();
             });
-            if (entity.finished) link = $(document.createElement("del")).append(link);
+            if (entity.finished) item = $(document.createElement("del")).append(item);
         }
         var tr = $(document.createElement("tr")).append(
-          $(document.createElement("th")).append(link)
+          $(document.createElement("th")).append(item)
         ).append(
           $(document.createElement("td")).css("font-family", "monospace").text(
             formatProbability(dropProbability[$("#cocoa_setting").val()].singleDrop + dropProbability[$("#cocoa_setting").val()].doubleDrop)
