@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>アイテムのドロップ率</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/css/select2.min.css" integrity="sha384-wCtV4+Y0Qc1RNg341xqADYvciqiG4lgd7Jf6Udp0EQ0PoEv83t+MLRtJyaO5vAEh" crossorigin="anonymous" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -47,14 +48,14 @@
           <h2>設定</h2>
           <section>
             <h3>クエスト</h3>
-            <select v-model="selectedGachaString">
+            <select id="gachas" v-select="selectedGachaString">
               <option value="null">------</option>
               <option v-for="difficulty in Difficulty.all" v-bind:value="'Difficulty ' + difficulty.id" v-text="difficulty.name"></option>
             </select>
           </section>
           <section>
             <h3>アイテム</h3>
-            <select v-model="selectedItemString">
+            <select id="items" v-select="selectedItemString">
               <option value="null">------</option>
               <optgroup label="未入手">
                 <option v-for="item in uncollectedItems | orderBy 'order'" v-bind:value="'Item ' + item.id" v-text="item.name"></option>
@@ -87,9 +88,12 @@
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js" integrity="sha384-XxcvoeNF5V0ZfksTnV+bejnCsJjOOIzN6UVwF85WBsAnU3zeYh5bloN+L4WLgeNE" crossorigin="anonymous"></script>
     <script src="https://cdn.rawgit.com/jaubourg/ajaxHooks/e7a9e0c34f6380b183cdd0790efad51c06613638/src/xdr.js" integrity="sha384-9Ps3We3zMMEScZhxG3HiN0h4cknNq6R4no6nVewH3uUDx8U2j5HeQ3kFL+wn30rI" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/js/select2.min.js" integrity="sha384-iViGfLSGR6GiB7RsfWQjsxI2sFHdsBriAK+Ywvt4q8VV14jekjOoElXweWVrLg/m" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/js/i18n/ja.js" integrity="sha384-uQ9xxDCmxyWGPgx9LLZgmNt1Xm3Y52XVJmvF8FBR8JBmQIZbIxL91JymBGMGpDcL" crossorigin="anonymous"></script>
+    <script src="https://cdn.rawgit.com/panorama-ed/maximize-select2-height/0b1ac0e53b120f555604acf505108552ba8b8286/maximize-select2-height.min.js" integrity="sha384-BRHxG6wKvLh+2PPfqqIItIuWbrJRKQkPa8wSo0bqk0fbH48gi3p1gzMkaTVUGYas" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.3.0/lodash.min.js" integrity="sha384-JQiwn7SmmvnnERspKQ5PNuxZIEJ9ypL81PN+lyowkoIUy69Kims/WrpGqJ2P9SSD" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.16/vue.min.js" integrity="sha384-2zfre+rXCk/YoX46nsdS0805ZXvWNMxiMopeJFqaVcMjStV8kC3R5gJ1SgokpTst" crossorigin="anonymous"></script>
-    <script src="dist/item.main.min.js?1455413872"></script>
+    <script src="dist/item.main.min.js?1455443526"></script>
   </body>
 </html>

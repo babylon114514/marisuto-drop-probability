@@ -1,4 +1,5 @@
 import "babel-polyfill";
+import "./vue-extension";
 import md5 from "md5";
 import { Buffer } from "buffer/";
 import Scout from "./scout";
