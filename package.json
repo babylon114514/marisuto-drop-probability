@@ -1,6 +1,6 @@
 {
   "name": "marisuto-drop-probability",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "This application calculates and shows the chance to get your desired character in Marisa and Alice's cookie storia.",
   "scripts": {
     "build": "`npm bin`/babel -d dist src && `npm bin`/browserify dist/index.main.js | `npm bin`/uglifyjs -o dist/index.main.min.js && `npm bin`/browserify dist/item.main.js | `npm bin`/uglifyjs -o dist/item.main.min.js",
