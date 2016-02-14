@@ -1,0 +1,4 @@
+*
+!/.gitignore
+!/index.main.min.js
+!/item.main.min.js

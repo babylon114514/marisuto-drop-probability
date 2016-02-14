@@ -1,0 +1,39 @@
+{
+  "name": "marisuto-drop-probability",
+  "version": "1.0.0",
+  "description": "This application calculates and shows the chance to get your desired character in Marisa and Alice's cookie storia.",
+  "scripts": {
+    "build": "`npm bin`/babel -d dist src && `npm bin`/browserify dist/index.main.js | `npm bin`/uglifyjs -o dist/index.main.min.js && `npm bin`/browserify dist/item.main.js | `npm bin`/uglifyjs -o dist/item.main.min.js",
+    "clean": "git clean -X -d -f",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/babylon114514/marisuto-drop-probability.git"
+  },
+  "author": "Koji TADOKORO",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/babylon114514/marisuto-drop-probability/issues"
+  },
+  "homepage": "http://babylon114514.github.io/marisuto-drop-probability/",
+  "babel": {
+    "presets": [
+      "es2015",
+      "stage-3"
+    ]
+  },
+  "engines": {
+    "node": "^5.5.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.5.1",
+    "babel-polyfill": "^6.5.0",
+    "babel-preset-es2015": "^6.5.0",
+    "babel-preset-stage-3": "^6.5.0",
+    "browserify": "^13.0.0",
+    "buffer": "^4.4.0",
+    "md5": "^2.0.0",
+    "uglify-js": "^2.6.1"
+  }
+}
