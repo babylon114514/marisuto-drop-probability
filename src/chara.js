@@ -453,4 +453,6 @@ Chara.all = [
     new Chara(443, "rrm", "RRM姉貴", 445),
     new Chara(444, "rma2", "応援そーなのかー", 223),
     new Chara(445, "dsnnn", "呪われしSNNN姉貴", 224),
+    new Chara(446, "hsi", "HSI姉貴", 446),
+    new Chara(447, "wrdkm", "わるだくみ先輩", 447),
 ];
