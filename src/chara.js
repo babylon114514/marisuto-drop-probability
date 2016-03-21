@@ -455,4 +455,10 @@ Chara.all = [
     new Chara(445, "dsnnn", "呪われしSNNN姉貴", 224),
     new Chara(446, "hsi", "HSI姉貴", 446),
     new Chara(447, "wrdkm", "わるだくみ先輩", 447),
+    new Chara(448, "ryg", "RYG姉貴", 448),
+    new Chara(449, "sky4", "メッモー☆SKY姉貴", 449),
+    new Chara(450, "aik", "AIK姉貴", 450),
+    new Chara(451, "drskr", "SKR姉貴", 451),
+    new Chara(452, "drskr2", "DRSKR", 452),
+    new Chara(453, "ndk5", "戦車と化したNDK", 453),
 ];
