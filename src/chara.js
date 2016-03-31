@@ -461,4 +461,7 @@ Chara.all = [
     new Chara(451, "drskr", "SKR姉貴", 451),
     new Chara(452, "drskr2", "DRSKR", 452),
     new Chara(453, "ndk5", "戦車と化したNDK", 453),
+    new Chara(454, "kisume", "キスメくん", 454),
+    new Chara(455, "mjm2", "神殺しマジメくん", 455),
+    new Chara(456, "kejime", "ケジメの翼", 456),
 ];
