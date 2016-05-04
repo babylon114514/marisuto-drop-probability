@@ -464,6 +464,8 @@ Chara.all = [
     new Chara(454, "kisume", "キスメくん", 454),
     new Chara(455, "mjm2", "神殺しマジメくん", 455),
     new Chara(456, "kejime", "ケジメの翼", 456),
-    new Chara(457, "bnkrg3", "力を得たBNKRG姉貴", 457),
-    new Chara(458, "alcgod", "女神ALC姉貴", 458),
+    new Chara(457, "bnkrg3", "力を得たBNKRG姉貴", 458),
+    new Chara(458, "alcgod", "女神ALC姉貴", 459),
+    new Chara(459, "sakura", "キャプテン・サクラ", 457),
+    new Chara(460, "ndk4", "ゲッターNDK", 460),
 ];
