@@ -470,4 +470,5 @@ Chara.all = [
     new Chara(460, "ndk4", "ゲッターNDK", 460),
     new Chara(461, "sik5", "宿命を背負ったSIK姉貴", 461),
     new Chara(462, "jpjk", "ジュリアナPJK", 462),
+    new Chara(463, "hsi2", "メタルHSI姉貴", 463),
 ];
