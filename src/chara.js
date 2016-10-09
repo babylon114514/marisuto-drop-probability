@@ -472,4 +472,5 @@ Chara.all = [
     new Chara(462, "jpjk", "ジュリアナPJK", 462),
     new Chara(463, "hsi2", "メタルHSI姉貴", 463),
     new Chara(464, "mumin", "ムーミン先輩", 464),
+    new Chara(465, "nyn", "NYN蜂", 465),
 ];
