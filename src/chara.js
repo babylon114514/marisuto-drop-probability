@@ -475,4 +475,8 @@ Chara.all = [
     new Chara(465, "nyn", "NYN蜂", 466),
     new Chara(466, "yusaku2", "ゆうさく蜂", 225),
     new Chara(467, "metikara", "目力先輩", 467),
+    new Chara(468, "uto", "うんち提案おじさん", 468),
+    new Chara(469, "aknm", "AKNM", 469),
+    new Chara(470, "hgsym", "HGSYMGNJ", 470),
+    new Chara(471, "hakurei", "博麗霊夢", 471),
 ];
