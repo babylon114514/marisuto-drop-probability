@@ -479,4 +479,5 @@ Chara.all = [
     new Chara(469, "aknm", "AKNM", 469),
     new Chara(470, "hgsym", "HGSYMGNJ", 470),
     new Chara(471, "hakurei", "博麗霊夢", 471),
+    new Chara(472, "icg_armer", "ICGアーマー", 472),
 ];
